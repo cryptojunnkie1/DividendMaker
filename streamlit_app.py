@@ -56,8 +56,6 @@ dividend_aristocrats = [
     ('VFC', 'V.F. Corporation')
 ]
 
-
-Other Dividend Stocks:
 other_dividend_stocks = [
     ('O', 'Realty Income'),
     ('MAIN', 'Main Street Capital'),
