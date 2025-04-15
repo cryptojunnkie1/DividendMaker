@@ -37,7 +37,7 @@ def get_stock_data(tickers):
             info = stock.info
             history = stock.history(period="5y")
             
-            div_yield = info.get('dividendYield', 0) * 100 if info.get('dividendYield') else 0
+            div_yield = info.get('dividendYield', 0) if info.get('dividendYield') else 0
             pe_ratio = info.get('trailingPE')
             payout_ratio = info.get('payoutRatio')
             market_cap = info.get('marketCap')
