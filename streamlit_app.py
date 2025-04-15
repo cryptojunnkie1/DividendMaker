@@ -7,7 +7,7 @@ from datetime import datetime
 st.set_page_config(page_title="Dividend Aristocrat Analyzer", layout="wide")
 
 # ========== Data Setup ==========
-Dividend Aristocrats:
+
 dividend_aristocrats = [
     ('JNJ', 'Johnson & Johnson'),
     ('PG', 'Procter & Gamble'),
