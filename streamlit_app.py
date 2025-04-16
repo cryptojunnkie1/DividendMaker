@@ -173,7 +173,7 @@ st.title("Dividend Stock Analysis Toolkit")
 st.subheader("Portfolio Builder for Long-Term Investors")
 
 # User input
-shares_owned = st.number_input("Enter number of shares you plan to hold:", min_value=1, value=100)
+shares_owned = st.number_input("Enter number of shares you plan to hold:", min_value=1, value=1)
 
 # Main analysis section
 col1, col2 = st.columns([3, 2])
