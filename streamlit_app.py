@@ -229,6 +229,29 @@ st.dataframe(
     height=400
 )
 
+# ========== Portfolio Summary ==========
+st.header("1-Share Portfolio Analysis")
+
+if not aristocrats_df.empty:
+    total_price = aristocrats_df['Price ($)'].sum()
+    annual_div = (aristocrats_df['Price ($)'] * aristocrats_df['Div Yield (%)']/100).sum()
+    five_year_factor = (1.07**5 - 1)/0.07
+    five_year_total = annual_div * five_year_factor
+    
+    st.markdown(f"""
+    **Hypothetical 1-Share-Per-Stock Portfolio**  
+    - Total Investment Required: ${total_price:,.2f}  
+    - Immediate Annual Dividends: ${annual_div:,.2f}  
+    - 5-Year Projected Dividends (7% growth): ${five_year_total:,.2f}  
+    
+    *Projections assume:  
+    • Constant stock prices  
+    • Dividend growth matches 5-year historical average  
+    • No reinvestment of dividends*
+    """)
+else:
+    st.warning("No aristocrat data available for calculation")
+
 # ========== Usage Instructions ==========
 st.sidebar.markdown("""
 **How to Use:**  
