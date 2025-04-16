@@ -28,7 +28,6 @@ dividend_aristocrats = [
     ('ADP', 'Automatic Data Processing'),
     ('BDX', 'Becton Dickinson'),
     ('BRO', 'Brown & Brown'),
-    ('BF.B', 'Brown-Forman'),
     ('CHRW', 'C.H. Robinson'),
     ('CAH', 'Cardinal Health'),
     ('CINF', 'Cincinnati Financial'),
