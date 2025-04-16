@@ -235,22 +235,57 @@ st.header("1-Share Portfolio Analysis")
 if not aristocrats_df.empty:
     total_price = aristocrats_df['Price ($)'].sum()
     annual_div = (aristocrats_df['Price ($)'] * aristocrats_df['Div Yield (%)']/100).sum()
+    
+    # Base case (no reinvestment)
     five_year_factor = (1.07**5 - 1)/0.07
     five_year_total = annual_div * five_year_factor
     
+    # With dividend reinvestment
+    shares_held = {ticker: 1 for ticker in aristocrats_df['Ticker']}
+    total_reinvested = 0
+    current_prices = aristocrats_df.set_index('Ticker')['Price ($)'].to_dict()
+    
+    for year in range(5):
+        annual_dividends = sum(
+            shares * current_prices[ticker] * (div_yield/100)
+            for ticker, (shares, div_yield) in zip(
+                shares_held.keys(),
+                zip(shares_held.values(), aristocrats_df['Div Yield (%)'])
+            )
+        )
+        
+        total_reinvested += annual_dividends
+        # Reinvest dividends into new shares
+        for ticker in shares_held:
+            share_price = current_prices[ticker]
+            dividend_per_share = share_price * (aristocrats_df.loc[
+                aristocrats_df['Ticker'] == ticker, 'Div Yield (%)'].values[0]/100)
+            new_shares = (annual_dividends * (shares_held[ticker]/sum(shares_held.values()))) / share_price
+            shares_held[ticker] += new_shares
+
     st.markdown(f"""
     **Hypothetical 1-Share-Per-Stock Portfolio**  
     - Total Investment Required: ${total_price:,.2f}  
     - Immediate Annual Dividends: ${annual_div:,.2f}  
-    - 5-Year Projected Dividends (7% growth): ${five_year_total:,.2f}  
     
-    *Projections assume:  
+    **5-Year Projections:**  
+    *Basic Scenario (No Reinvestment):*  
+    - Total Dividends: ${five_year_total:,.2f}  
+    
+    *With Dividend Reinvestment:*  
+    - Final Share Holdings: {sum(shares_held.values()):.2f} shares  
+    - Total Dividends Earned: ${total_reinvested:,.2f}  
+    - Portfolio Value: ${sum([sh*current_prices[t] for t, sh in shares_held.items()]):,.2f}  
+    
+    *Key Assumptions:*  
     • Constant stock prices  
-    • Dividend growth matches 5-year historical average  
-    • No reinvestment of dividends*
+    • 7% annual dividend growth  
+    • Dividends reinvested proportionally across all stocks  
+    • No transaction costs or taxes  
     """)
 else:
     st.warning("No aristocrat data available for calculation")
+
 
 # ========== Usage Instructions ==========
 st.sidebar.markdown("""
