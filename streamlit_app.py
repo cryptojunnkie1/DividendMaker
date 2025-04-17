@@ -247,7 +247,7 @@ with col2:
             st.markdown(f"""
             **Why Hold:**  
             - {row['Company']} maintains a {row['Div Yield (%)']:.2f}% dividend yield with
-            {row['5Y Div Growth (%)']:.2f}% average annual growth over 5 years
+            {row['5Y Div Growth (%)']:.2f}% average annual growth over 5 years.
             - Payout ratio of {row['Payout Ratio (%)']:.1f}% suggests sustainability.
             
             **Dividend Projections ({shares_owned} shares):**  
@@ -258,7 +258,7 @@ with col2:
             - Current P/E: {row['P/E Ratio']:.1f} vs Sector Average: {row['P/E Ratio'] * 0.9:.1f}
             """)
 
-            # Fundamental Analysis
+            # Fundamental Analysis 
             st.markdown(f"""
             **Fundamental Analysis**  
             • Current Yield: {row['Div Yield (%)']:.2f}% (S&P 500 Avg: 1.5%)  
@@ -267,7 +267,7 @@ with col2:
             • Market Cap: ${row['Market Cap ($B)']:.2f}B  
             • Revenue Trend: {row['Revenue Growth (%)']:.2f}% YoY  
             """)
-            
+
             # Yield Strength
             st.markdown(f"Yield Strength: {(row['Div Yield (%)'] / 1.5):.2f}x Market Average")
 
@@ -330,7 +330,7 @@ for _, row in other_df.iterrows():
         st.markdown(f"""
         **Why Hold:**  
         - {row['Company']} maintains a {row['Div Yield (%)']:.2f}% dividend yield with
-        {row['5Y Div Growth (%)']:.2f}% average annual growth over 5 years
+        {row['5Y Div Growth (%)']:.2f}% average annual growth over 5 years.
         - Payout ratio of {row['Payout Ratio (%)']:.1f}% suggests sustainability.
         
         **Dividend Projections ({shares_owned} shares):**  
@@ -350,7 +350,7 @@ for _, row in other_df.iterrows():
         • Market Cap: ${row['Market Cap ($B)']:.2f}B  
         • Revenue Trend: {row['Revenue Growth (%)']:.2f}% YoY  
         """)
-        
+
         # Yield Strength
         st.markdown(f"Yield Strength: {(row['Div Yield (%)'] / 1.5):.2f}x Market Average")
 
