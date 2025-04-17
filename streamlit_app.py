@@ -180,7 +180,7 @@ def get_stock_data(tickers):
                 'Ticker': ticker,
                 'Company': name,
                 'Price ($)': info.get('currentPrice'),
-                'Div Yield (%)': div_yield,  # Convert to percentage
+                'Div Yield (%)': div_yield * 100,  # Convert to percentage
                 '5Y Div Growth (%)': div_growth_5y,
                 'Payout Ratio (%)': (payout_ratio * 100) if payout_ratio else None,
                 'P/E Ratio': pe_ratio,
@@ -248,8 +248,7 @@ with col2:
             **Why Hold:**  
             - {row['Company']} maintains a {row['Div Yield (%)']:.2f}% dividend yield with
             {row['5Y Div Growth (%)']:.2f}% average annual growth over 5 years
-            - Payout ratio of {row['Payout Ratio (%)']:.1f}% suggests {["caution needed", "sustainable"][row['Payout Ratio (%)'] < 60]}
-            - Market leadership in sector with {row['Revenue Growth (%)']:.2f}% revenue growth
+            - Payout ratio of {row['Payout Ratio (%)']:.1f}% suggests sustainability.
             
             **Dividend Projections ({shares_owned} shares):**  
             - Annual Dividend Income: **${row['Price ($)'] * shares_owned * row['Div Yield (%)'] / 100:.2f}**  
@@ -257,6 +256,36 @@ with col2:
             
             **Valuation:**  
             - Current P/E: {row['P/E Ratio']:.1f} vs Sector Average: {row['P/E Ratio'] * 0.9:.1f}
+            """)
+
+            # Fundamental Analysis
+            st.markdown(f"""
+            **Fundamental Analysis**  
+            • Current Yield: {row['Div Yield (%)']:.2f}% (S&P 500 Avg: 1.5%)  
+            • 5Y Dividend Growth: {row['5Y Div Growth (%)'] if row['5Y Div Growth (%)'] is not None else "nan"}%  
+            • Payout Ratio: {row['Payout Ratio (%)']:.1f}%  
+            • Market Cap: ${row['Market Cap ($B)']:.2f}B  
+            • Revenue Trend: {row['Revenue Growth (%)']:.2f}% YoY  
+            """)
+            
+            # Yield Strength
+            st.markdown(f"Yield Strength: {(row['Div Yield (%)'] / 1.5):.2f}x Market Average")
+
+            # Risk/Reward Profile
+            st.markdown(f"""
+            **Risk/Reward Profile**  
+            - Volatility Score: {(100 - abs(row['Payout Ratio (%)'] - 75)):.1f}/100  
+            - Yield Sustainability: {"🔴 High Risk" if row['Payout Ratio (%)'] > 90 else "🟡 Moderate" if row['Payout Ratio (%)'] > 75 else "🟢 Stable"}  
+            - Growth Potential: {"⭐" * int(row['Revenue Growth (%)'] / 5)}  
+            - Value Indicator: {"Undervalued" if row['P/E Ratio'] < 15 else "Fair" if row['P/E Ratio'] < 25 else "Overvalued"}  
+            """)
+
+            # Strategic Rationale
+            st.markdown(f"""
+            **Strategic Rationale**  
+            - Projected 5Y Total Return: {0.4 * row['Div Yield (%)'] + 0.6 * row['Revenue Growth (%)']:.1f}%  
+            - Dividend Coverage Ratio: {min(100 / (row['Payout Ratio (%)'] or 1), 5):.1f}x  
+            - Sector Weighting Impact: {["Enhances Diversification", "Concentrates Exposure"][row['Market Cap ($B)'] > 50]}  
             """)
 
 # Additional dividend stocks section
@@ -312,6 +341,36 @@ for _, row in other_df.iterrows():
         - Current P/E: {row['P/E Ratio']:.1f} vs Sector Average: {row['P/E Ratio'] * 0.9:.1f}
         """)
 
+        # Fundamental Analysis
+        st.markdown(f"""
+        **Fundamental Analysis**  
+        • Current Yield: {row['Div Yield (%)']:.2f}% (S&P 500 Avg: 1.5%)  
+        • 5Y Dividend Growth: {row['5Y Div Growth (%)'] if row['5Y Div Growth (%)'] is not None else "nan"}%  
+        • Payout Ratio: {row['Payout Ratio (%)']:.1f}%  
+        • Market Cap: ${row['Market Cap ($B)']:.2f}B  
+        • Revenue Trend: {row['Revenue Growth (%)']:.2f}% YoY  
+        """)
+        
+        # Yield Strength
+        st.markdown(f"Yield Strength: {(row['Div Yield (%)'] / 1.5):.2f}x Market Average")
+
+        # Risk/Reward Profile
+        st.markdown(f"""
+        **Risk/Reward Profile**  
+        - Volatility Score: {(100 - abs(row['Payout Ratio (%)'] - 75)):.1f}/100  
+        - Yield Sustainability: {"🔴 High Risk" if row['Payout Ratio (%)'] > 90 else "🟡 Moderate" if row['Payout Ratio (%)'] > 75 else "🟢 Stable"}  
+        - Growth Potential: {"⭐" * int(row['Revenue Growth (%)'] / 5)}  
+        - Value Indicator: {"Undervalued" if row['P/E Ratio'] < 15 else "Fair" if row['P/E Ratio'] < 25 else "Overvalued"}  
+        """)
+
+        # Strategic Rationale
+        st.markdown(f"""
+        **Strategic Rationale**  
+        - Projected 5Y Total Return: {0.4 * row['Div Yield (%)'] + 0.6 * row['Revenue Growth (%)']:.1f}%  
+        - Dividend Coverage Ratio: {min(100 / (row['Payout Ratio (%)'] or 1), 5):.1f}x  
+        - Sector Weighting Impact: {["Enhances Diversification", "Concentrates Exposure"][row['Market Cap ($B)'] > 50]}  
+        """)
+
 # ========== PaperChasn Analysis Section ==========
 st.header("PaperChasn High-Yield Strategy Stocks")
 paper_chasn_df = get_stock_data(paper_chasn_stocks)
@@ -345,7 +404,7 @@ for _, row in paper_chasn_df.iterrows():
             """)
             
             st.progress(value=min(row['Div Yield (%)'] / 15, 1), 
-                       text=f"Yield Strength: {row['Div Yield (%)'] / 1.5:.1f}x Market Average")
+                       text=f"Yield Strength: {row['Div Yield (%)'] / 1.5:.2f}x Market Average")
 
         with col_b:
             st.markdown(f"""
