@@ -7,7 +7,6 @@ from datetime import datetime
 st.set_page_config(page_title="Dividend Aristocrat Analyzer", layout="wide")
 
 # ========== Data Setup ==========
-
 dividend_aristocrats = [
     ('JNJ', 'Johnson & Johnson'),
     ('PG', 'Procter & Gamble'),
@@ -138,6 +137,30 @@ other_dividend_stocks = [
     ('XEL', 'Xcel Energy')
 ]
 
+paper_chasn_stocks = [
+    ('ABBV', 'AbbVie'),
+    ('CVX', 'Chevron'),
+    ('TROW', 'T. Rowe Price'),
+    ('C', 'Citigroup'),
+    ('BBY', 'Best Buy'),
+    ('O', 'Realty Income'),
+    ('CMA', 'Comerica'),
+    ('HSBC', 'HSBC Holdings'),
+    ('BMY', 'Bristol-Myers Squibb'),
+    ('EPR', 'EPR Properties'),
+    ('PFE', 'Pfizer'),
+    ('BCE', 'BCE Inc.'),
+    ('STWD', 'Starwood Property Trust'),
+    ('NLY', 'Annaly Capital'),
+    ('APA', 'APA Corporation'),
+    ('ARR', 'ARMOUR Residential REIT'),
+    ('HST', 'Host Hotels & Resorts'),
+    ('IVZ', 'Invesco'),
+    ('IEP', 'Icahn Enterprises'),
+    ('AGNC', 'AGNC Investment'),
+    ('BTG', 'B2Gold')
+]
+
 # ========== Helper Functions ==========
 def get_stock_data(tickers):
     data = []
@@ -229,63 +252,75 @@ st.dataframe(
     height=400
 )
 
+# PaperChasn strategy stocks
+st.header("PaperChasn High-Yield Strategy Stocks")
+paper_chasn_df = get_stock_data(paper_chasn_stocks)
+st.dataframe(
+    paper_chasn_df.style.format({
+        'Price ($)': '{:.2f}',
+        'Div Yield (%)': '{:.2f}%',
+        '5Y Div Growth (%)': '{:.2f}%',
+        'Payout Ratio (%)': '{:.1f}%',
+        'Market Cap ($B)': '${:.2f}B',
+        'Revenue Growth (%)': '{:.2f}%'
+    }),
+    height=400
+)
+
 # ========== Portfolio Summary ==========
-st.header("1-Share Portfolio Analysis")
+st.header("Portfolio Analysis")
 
-if not aristocrats_df.empty:
-    total_price = aristocrats_df['Price ($)'].sum()
-    annual_div = (aristocrats_df['Price ($)'] * aristocrats_df['Div Yield (%)']/100).sum()
-    
-    # Base case (no reinvestment)
-    five_year_factor = (1.07**5 - 1)/0.07
-    five_year_total = annual_div * five_year_factor
-    
-    # With dividend reinvestment
-    shares_held = {ticker: 1 for ticker in aristocrats_df['Ticker']}
-    total_reinvested = 0
-    current_prices = aristocrats_df.set_index('Ticker')['Price ($)'].to_dict()
-    
-    for year in range(5):
-        annual_dividends = sum(
-            shares * current_prices[ticker] * (div_yield/100)
-            for ticker, (shares, div_yield) in zip(
-                shares_held.keys(),
-                zip(shares_held.values(), aristocrats_df['Div Yield (%)'])
-            )
-        )
-        
-        total_reinvested += annual_dividends
-        # Reinvest dividends into new shares
-        for ticker in shares_held:
-            share_price = current_prices[ticker]
-            dividend_per_share = share_price * (aristocrats_df.loc[
-                aristocrats_df['Ticker'] == ticker, 'Div Yield (%)'].values[0]/100)
-            new_shares = (annual_dividends * (shares_held[ticker]/sum(shares_held.values()))) / share_price
-            shares_held[ticker] += new_shares
+tab1, tab2, tab3 = st.tabs([
+    "Aristocrats Only", 
+    "PaperChasn Only",
+    "Combined Strategy"
+])
 
-    st.markdown(f"""
-    **Hypothetical 1-Share-Per-Stock Portfolio**  
-    - Total Investment Required: ${total_price:,.2f}  
-    - Immediate Annual Dividends: ${annual_div:,.2f}  
-    
-    **5-Year Projections:**  
-    *Basic Scenario (No Reinvestment):*  
-    - Total Dividends: ${five_year_total:,.2f}  
-    
-    *With Dividend Reinvestment:*  
-    - Final Share Holdings: {sum(shares_held.values()):.2f} shares  
-    - Total Dividends Earned: ${total_reinvested:,.2f}  
-    - Portfolio Value: ${sum([sh*current_prices[t] for t, sh in shares_held.items()]):,.2f}  
-    
-    *Key Assumptions:*  
-    • Constant stock prices  
-    • 7% annual dividend growth  
-    • Dividends reinvested proportionally across all stocks  
-    • No transaction costs or taxes  
-    """)
-else:
-    st.warning("No aristocrat data available for calculation")
+with tab1:
+    if not aristocrats_df.empty:
+        total_price = aristocrats_df['Price ($)'].sum()
+        annual_div = (aristocrats_df['Price ($)'] * aristocrats_df['Div Yield (%)']/100).sum()
+        five_year_factor = (1.07**5 - 1)/0.07
+        five_year_total = annual_div * five_year_factor
 
+        st.markdown(f"""
+        **Aristocrats Portfolio**  
+        - Total Investment: ${total_price:,.2f}  
+        - Immediate Annual Dividends: ${annual_div:,.2f}  
+        - 5-Year Projection (7% growth): ${five_year_total:,.2f}
+        - Average Yield: {aristocrats_df['Div Yield (%)'].mean():.2f}%
+        """)
+
+with tab2:
+    if not paper_chasn_df.empty:
+        total_price_paper = paper_chasn_df['Price ($)'].sum()
+        annual_div_paper = (paper_chasn_df['Price ($)'] * paper_chasn_df['Div Yield (%)']/100).sum()
+        five_year_paper = annual_div_paper * ((1.07**5 - 1)/0.07)
+
+        st.markdown(f"""
+        **PaperChasn Portfolio**  
+        - Total Investment: ${total_price_paper:,.2f}  
+        - Immediate Annual Dividends: ${annual_div_paper:,.2f}  
+        - 5-Year Projection (7% growth): ${five_year_paper:,.2f}
+        - Average Yield: {paper_chasn_df['Div Yield (%)'].mean():.2f}%
+        """)
+
+with tab3:
+    combined_df = pd.concat([aristocrats_df, paper_chasn_df])
+    if not combined_df.empty:
+        total_combined = combined_df['Price ($)'].sum()
+        annual_combined = (combined_df['Price ($)'] * combined_df['Div Yield (%)']/100).sum()
+        five_year_combined = annual_combined * ((1.07**5 - 1)/0.07)
+
+        st.markdown(f"""
+        **Combined Strategy Portfolio**  
+        - Total Investment: ${total_combined:,.2f}  
+        - Immediate Annual Dividends: ${annual_combined:,.2f}  
+        - 5-Year Projection (7% growth): ${five_year_combined:,.2f}
+        - Yield Composition:  
+          • Aristocrats: {aristocrats_df['Div Yield (%)'].mean():.2f}%  
+          • PaperChasn: {paper_chasn_df['Div Yield (%)'].mean():.2f}%
+        """)
 
 # ========== Usage Instructions ==========
 st.sidebar.markdown("""
@@ -293,11 +328,17 @@ st.sidebar.markdown("""
 1. Enter planned share count in main input  
 2. Explore Aristocrats in left table  
 3. Click ➕ icons for detailed analysis  
-4. Compare with other dividend stocks below  
+4. Compare all stock categories sequentially  
+5. Analyze different portfolio strategies via tabs  
 
 **Key Metrics:**  
 - **Div Yield%**: Annual dividend/price  
 - **Payout Ratio**: % of earnings paid as dividends  
 - **5Y Growth**: Dividend growth trajectory  
 - **Rev Growth**: Fundamental strength indicator  
+
+**New Features:**  
+• Full PaperChasn high-yield analysis  
+• Three portfolio comparison strategies  
+• Complete 5-year projections for all portfolios  
 """)
