@@ -421,14 +421,21 @@ with tab1:
 with tab2:
     if not paper_chasn_df.empty:
         total_price_paper = paper_chasn_df['Price ($)'].sum()
-        annual_div_paper = (paper_chasn_df['Price ($)'] * paper_chasn_df['Div Yield (%)']/100).sum()
-        five_year_paper = annual_div_paper * ((1.07**5 - 1)/0.07)
+        annual_div_paper = (paper_chasn_df['Price ($)'] * paper_chasn_df['Div Yield (%)'] / 100).sum()
+        five_year_paper = annual_div_paper * ((1.07 ** 5 - 1) / 0.07)
+
+        # Calculate the total projected amount considering reinvestment
+        total_projected_value = total_price_paper  # Start with initial investment
+        for year in range(1, 6):  # Calculate for 5 years
+            annual_div_paper = (total_projected_value * (paper_chasn_df['Div Yield (%)'].mean() / 100))  # Dividends for the year
+            total_projected_value += annual_div_paper * (1 + 0.07)  # Reinvest with projected growth
 
         st.markdown(f"""
         **PaperChasn Portfolio**  
         - Total Investment: ${total_price_paper:,.2f}  
         - Immediate Annual Dividends: ${annual_div_paper:,.2f}  
-        - 5-Year Projection (7% growth): ${five_year_paper:,.2f}
+        - 5-Year Projection (7% growth): ${five_year_paper:,.2f}  
+        - Total Projected Value (With Reinvestment): ${total_projected_value:,.2f}
         - Average Yield: {paper_chasn_df['Div Yield (%)'].mean():.2f}%
         """)
 
