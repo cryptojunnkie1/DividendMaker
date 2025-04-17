@@ -180,7 +180,7 @@ def get_stock_data(tickers):
                 'Ticker': ticker,
                 'Company': name,
                 'Price ($)': info.get('currentPrice'),
-                'Div Yield (%)': div_yield,  # Convert to percentage
+                'Div Yield (%)': div_yield * 100,  # Convert to percentage
                 '5Y Div Growth (%)': div_growth_5y,
                 'Payout Ratio (%)': (payout_ratio * 100) if payout_ratio else None,
                 'P/E Ratio': pe_ratio,
@@ -221,7 +221,7 @@ with col1:
     if not aristocrats_df.empty:
         total_price_aristocrats = aristocrats_df['Price ($)'].sum()
         avg_div_yield_aristocrats = aristocrats_df['Div Yield (%)'].mean() / 100  # Convert to decimal
-        annual_div_aristocrats = (aristocrats_df['Price ($)'] * aristocrats_df['Div Yield (%)']/100).sum()
+        annual_div_aristocrats = (aristocrats_df['Price ($)'] * aristocrats_df['Div Yield (%)'] / 100).sum()
 
         # Total projected value with reinvestment
         total_projected_value_aristocrats = total_price_aristocrats  # Start with initial investment
@@ -379,7 +379,14 @@ if not paper_chasn_df.empty:
         with col1:
             st.metric("Portfolio Yield", f"{avg_yield:.2f}%", "vs 1.5% S&P 500")
         with col2:
-            st.metric("Quality Score", f"{(0.4 * avg_yield + 0.3 * avg_growth + 0.3 * (100 - paper_chasn_df['Payout Ratio (%)'].mean())):.1f}/100")
+            # Calculate and display quality score with diagnostics
+            average_payout_ratio = paper_chasn_df['Payout Ratio (%)'].mean()
+            quality_score = (
+                (0.4 * (avg_yield if avg_yield is not None else 0)) +
+                (0.3 * (avg_growth if avg_growth is not None else 0)) +
+                (0.3 * (100 - (average_payout_ratio if average_payout_ratio is not None else 0)))
+            )
+            st.metric("Quality Score", f"{quality_score:.1f}/100")
         with col3:
             st.metric("Risk-Adjusted Return", f"{sharpe_ratio:.2f}", "Sharpe Ratio")
 
