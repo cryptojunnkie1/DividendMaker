@@ -203,6 +203,33 @@ col1, col2 = st.columns([3, 2])
 # Dividend Aristocrats Analysis
 with col1:
     st.header("Dividend Aristocrats Analysis")
+    # Header with integrated tooltip
+    st.markdown("""
+    <div style="position: relative; display: inline-block;">
+      <h1 style="display: inline;">
+        Dividend Aristocrats Analysis
+        <span style="
+          visibility: hidden;
+          width: 280px;
+          background: #FFFFFF;
+          color: #2d3436;
+          border: 1px solid #dfe6e9;
+          border-radius: 4px;
+          padding: 12px;
+          position: absolute;
+          z-index: 1;
+          bottom: 125%;
+          left: 50%;
+          margin-left: -140px;
+          opacity: 0;
+          transition: opacity 0.3s;
+          box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+        ">
+          Companies with 25+ consecutive years<br>of dividend growth
+        </span>
+      </h1>
+    </div>
+    """, unsafe_allow_html=True)
     aristocrats_df = get_stock_data(dividend_aristocrats)
     st.dataframe(
         aristocrats_df.style.format({
