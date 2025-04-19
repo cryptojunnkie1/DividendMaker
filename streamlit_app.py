@@ -79,7 +79,6 @@ other_dividend_stocks = [
     ('BXP', 'Boston Properties'),
     ('BMY', 'Bristol-Myers Squibb'),
     ('AVGO', 'Broadcom'),
-    ('XCG.SG', 'Cabot Oil & Gas'),
     ('CCJ', 'Cameco'),
     ('CAT', 'Caterpillar'),
     ('ATO', 'Atmos Energy'),
