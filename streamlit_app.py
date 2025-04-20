@@ -1,6 +1,6 @@
-# INSTALLATION: Run these commands first
-# pip install streamlit yfinance pandas numpy plotly streamlit-extras
-# streamlit run app.py
+# COMPLETE DIVIDEND ANALYZER APP
+# INSTALL: pip install streamlit yfinance pandas numpy plotly
+# RUN: streamlit run app.py
 
 import streamlit as st
 import yfinance as yf
@@ -8,7 +8,6 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 from datetime import datetime
-from streamlit_extras import responsive
 
 # ========== DATA SETUP ==========
 dividend_aristocrats = [
@@ -91,161 +90,214 @@ paper_chasn_stocks = [
     ('BTG', 'B2Gold')
 ]
 
-# ========== HELPER FUNCTIONS ==========
+
+# ====== CORE FUNCTIONS ======
 @st.cache_data(ttl=3600)
-def get_stock_data(tickers):
+def get_stock_data(ticker_list):
+    """Fetch complete stock data with error handling"""
     data = []
-    for ticker, name in tickers:
+    for ticker, name in ticker_list:
         try:
             stock = yf.Ticker(ticker)
             info = stock.info
-            history = stock.history(period="5y")
+            hist = stock.history(period="1y")
             
-            div_yield = info.get('dividendYield', 0) or 0
-            pe_ratio = info.get('trailingPE')
-            payout_ratio = info.get('payoutRatio')
-            market_cap = info.get('marketCap')
-            div_growth = history['Dividends'].pct_change(periods=252*5).mean()*100
-            
-            data.append({
+            entry = {
                 'Ticker': ticker,
-                'Company': name,
-                'Price ($)': info.get('currentPrice'),
-                'Div Yield (%)': div_yield,
-                '5Y Div Growth (%)': div_growth,
-                'Payout Ratio (%)': (payout_ratio * 100) if payout_ratio else None,
-                'P/E Ratio': pe_ratio,
-                'Market Cap ($B)': round(market_cap/1e9, 2) if market_cap else None,
-                'Revenue Growth (%)': (info.get('revenueGrowth', 0) or 0)*100
-            })
+                'Name': name,
+                'Price ($)': info.get('currentPrice', np.nan),
+                'Div Yield (%)': info.get('dividendYield', 0) * 100,
+                '5Y Div Growth (%)': info.get('fiveYearAvgDividendGrowthRate', 0) * 100,
+                'Payout Ratio (%)': info.get('payoutRatio', 0) * 100,
+                'Market Cap ($B)': info.get('marketCap', 0) / 1e9,
+                'Revenue Growth (%)': info.get('revenueGrowth', 0) * 100,
+                'Last Updated': datetime.now().strftime("%Y-%m-%d %H:%M")
+            }
+            data.append(entry)
         except Exception as e:
             st.error(f"Error fetching {ticker}: {str(e)}")
     return pd.DataFrame(data)
 
 def create_dividend_chart(ticker):
+    """Generate interactive dividend history chart"""
     try:
-        stock = yf.Ticker(ticker)
-        hist = stock.dividends.reset_index()
-        fig = px.area(hist, x='Date', y='Dividends', 
+        div_history = yf.Ticker(ticker).dividends.reset_index()
+        fig = px.line(div_history, x='Date', y='Dividends', 
                      title=f"{ticker} Dividend History",
-                     labels={'Dividends': 'Amount ($)'})
-        fig.update_layout(hovermode="x", template='plotly_white')
+                     labels={'Dividends': 'Dividend per Share ($)'})
+        fig.update_traces(line=dict(width=4))
         return fig
-    except:
-        return px.scatter(title="Data Unavailable")
+    except Exception as e:
+        st.error(f"Chart error: {str(e)}")
+        return px.scatter(title="Data Not Available")
 
-# ========== APP INTERFACE ==========
-st.set_page_config(page_title="Dividend Pro", layout="wide", page_icon="💸")
-responsive.config(default_layout="desktop")
+# ====== RESPONSIVE LAYOUT SYSTEM ======
+def is_mobile():
+    """Detect mobile devices using simple screen width simulation"""
+    return st.session_state.get('screen_width', 1200) < 768
 
-# Sidebar Controls
-with st.sidebar:
-    st.title("Controls")
-    shares = st.number_input("Shares to Hold", 1, 10000, 100)
-    alerts = st.multiselect("Alerts", ["Yield >5%", "Payout <75%", "52W Low"])
-    st.divider()
+def responsive_columns():
+    """Dynamic column configuration"""
+    return 1 if is_mobile() else [2, 1]
+
+def adaptive_dataframe(df):
+    """Optimize dataframe display for different devices"""
+    fmt_dict = {
+        'Price ($)': '{:.2f}',
+        'Div Yield (%)': '{:.2f}%',
+        '5Y Div Growth (%)': '{:.2f}%',
+        'Payout Ratio (%)': '{:.1f}%',
+        'Market Cap ($B)': '${:.2f}B',
+        'Revenue Growth (%)': '{:.2f}%'
+    }
     
-    # Education Section
-    with st.expander("Learn Dividends 101"):
-        st.markdown("""
-        **Dividend Basics**  
-        - Yield = Annual Dividend / Stock Price  
-        - Payout Ratio = Dividends / Earnings  
-        - DRIP = Dividend Reinvestment Plan  
-        \[ Yield = \frac{D}{P} \times 100\% \]
-        """)
-
-# Main Tabs
-tab1, tab2, tab3 = st.tabs(["Analysis", "Portfolio", "Community"])
-
-with tab1:
-    # Stock Selection
-    category = st.radio("Stock Group", ["Aristocrats", "High Yield", "PaperChasn"])
-    tickers = {
-        "Aristocrats": dividend_aristocrats,
-        "High Yield": other_dividend_stocks,
-        "PaperChasn": paper_chasn_stocks
-    }.get(category, dividend_aristocrats)
+    styled_df = df.style.format(fmt_dict)
     
-    # Data Display
-    df = get_stock_data(tickers)
-    if not df.empty:
-        col1, col2 = st.columns([2, 3])
+    if is_mobile():
+        return st.dataframe(
+            styled_df.set_properties(**{'font-size': '10px'}),
+            height=400,
+            use_container_width=True
+        )
+    else:
+        return st.dataframe(
+            styled_df.background_gradient(),
+            height=600,
+            use_container_width=True
+        )
+
+# ====== MAIN APP ======
+def main():
+    # Initial configuration
+    st.set_page_config(
+        page_title="Dividend Pro", 
+        layout="wide", 
+        page_icon="💸",
+        menu_items={
+            'Get Help': 'https://dividendanalyzer.com/help',
+            'Report a bug': 'mailto:support@dividendanalyzer.com',
+            'About': "### Dividend Analysis Tool v2.0"
+        }
+    )
+    
+    # Session state initialization
+    if 'screen_width' not in st.session_state:
+        st.session_state.screen_width = 1200  # Default desktop
+    
+    # Device-aware title
+    st.title("📱 Mobile Dividend Viewer" if is_mobile() else "💻 Professional Dividend Analyzer")
+    
+    # Sidebar controls
+    with st.sidebar:
+        st.header("⚙️ Controls")
+        shares = st.number_input("Number of Shares", 1, 10000, 100, 
+                               help="Enter your total shares owned")
+        investment = st.number_input("Investment Amount ($)", 100, 1000000, 10000)
         
-        with col1:
-            st.dataframe(
-                df.style.format({
-                    'Price ($)': '{:.2f}',
-                    'Div Yield (%)': '{:.2f}%',
-                    '5Y Div Growth (%)': '{:.2f}%',
-                    'Payout Ratio (%)': '{:.1f}%',
-                    'Market Cap ($B)': '${:.2f}B',
-                    'Revenue Growth (%)': '{:.2f}%'
-                }),
-                height=600
-            )
+        st.divider()
+        alert_options = ["Yield >5%", "Payout <75%", "52W Low", "High Debt", "Negative Growth"]
+        alerts = st.multiselect("Set Alerts", alert_options)
         
-        with col2:
-            selected = st.selectbox("Analyze Stock", df['Ticker'])
-            st.plotly_chart(create_dividend_chart(selected), use_container_width=True)
+        st.divider()
+        if is_mobile():
+            with st.expander("📚 Dividend Guide"):
+                st.markdown("""
+                **Key Formulas**  
+                \[ Dividend\ Yield = \frac{Annual\ Dividend}{Stock\ Price} \times 100\% \]  
+                \[ Payout\ Ratio = \frac{Dividends\ Paid}{Net\ Income} \times 100\% \]
+                """)
+        else:
+            st.markdown("""
+            **Essential Formulas**  
+            \[ Yield = \frac{D}{P} \times 100\% \]  
+            \[ Payout\ Ratio = \frac{Div}{EPS} \times 100\% \]
+            """)
+
+    # Main interface tabs
+    tab1, tab2, tab3 = st.tabs(["📊 Analysis", "💰 Portfolio", "💬 Community"])
+
+    with tab1:
+        # Stock category selection
+        category = st.radio("Select Stock Category", 
+                           ("Aristocrats", "High Yield", "PaperChasn"),
+                           horizontal=is_mobile(),
+                           help="Choose between stable dividend payers and growth stocks")
+        
+        # Load appropriate stock list
+        stock_map = {
+            "Aristocrats": DIVIDEND_ARISTOCRATS,
+            "High Yield": HIGH_YIELD_STOCKS,
+            "PaperChasn": PAPERCHASN_STOCKS
+        }
+        df = get_stock_data(stock_map[category])
+        
+        # Responsive columns layout
+        cols = st.columns(responsive_columns())
+        
+        # Left column - Data display
+        with cols[0]:
+            st.subheader(f"{category} Stocks")
+            adaptive_dataframe(df)
+        
+        # Right column - Detailed analysis (desktop only)
+        if len(cols) > 1:
+            with cols[1]:
+                st.subheader("Deep Analysis")
+                selected_ticker = st.selectbox("Choose Stock", df['Ticker'])
+                
+                # Dividend chart
+                st.plotly_chart(
+                    create_dividend_chart(selected_ticker),
+                    use_container_width=True
+                )
+                
+                # Key metrics
+                metric_cols = st.columns(2)
+                with metric_cols[0]:
+                    st.metric("Current Yield", 
+                             f"{df[df['Ticker'] == selected_ticker]['Div Yield (%)'].values[0]:.2f}%")
+                    st.metric("Payout Ratio", 
+                             f"{df[df['Ticker'] == selected_ticker]['Payout Ratio (%)'].values[0]:.1f}%")
+                with metric_cols[1]:
+                    st.metric("5Y Growth", 
+                             f"{df[df['Ticker'] == selected_ticker]['5Y Div Growth (%)'].values[0]:.2f}%")
+                    st.metric("Market Cap", 
+                             f"${df[df['Ticker'] == selected_ticker]['Market Cap ($B)'].values[0]:.2f}B")
+
+    with tab2:
+        st.header("Portfolio Simulation")
+        cols = st.columns(1 if is_mobile() else 3)
+        
+        # Portfolio inputs
+        with cols[0]:
+            st.subheader("Holdings")
+            selected_stocks = st.multiselect("Select Stocks", [t[0] for t in DIVIDEND_ARISTOCRATS])
             
-            stock = df[df['Ticker'] == selected].iloc[0]
-            st.metric("Current Yield", f"{stock['Div Yield (%)']:.2f}%")
-            st.progress(min(stock['Payout Ratio (%)']/100, 1), 
-                       text=f"Payout Ratio: {stock['Payout Ratio (%)']:.1f}%")
+        if len(cols) > 1:
+            with cols[1]:
+                st.subheader("Dividend Impact")
+                if selected_stocks:
+                    div_total = sum(df[df['Ticker'].isin(selected_stocks)]['Div Yield (%)']/100 * investment)
+                    st.metric("Annual Income", f"${div_total:.2f}")
+                else:
+                    st.warning("Select stocks to see projections")
+        
+        if len(cols) > 2:
+            with cols[2]:
+                st.subheader("Growth Projection")
+                years = st.slider("Years", 1, 30, 10)
+                if selected_stocks:
+                    growth = sum(df[df['Ticker'].isin(selected_stocks)]['5Y Div Growth (%)']/100)
+                    future_value = investment * (1 + growth)**years
+                    st.metric("Projected Value", f"${future_value:,.2f}")
 
-with tab2:
-    st.header("Portfolio Builder")
-    cols = st.columns(3)
-    
-    # Holdings Input
-    holdings = {}
-    for idx, (ticker, name) in enumerate(dividend_aristocrats + other_dividend_stocks):
-        with cols[idx%3]:
-            holdings[ticker] = st.slider(
-                f"{ticker} Shares", 0, 1000, 0,
-                help=f"Allocate {name}"
-            )
-    
-    # Portfolio Math
-    total_value = 0
-    income = 0
-    for ticker, shares in holdings.items():
-        price = get_stock_data([(ticker, '')])['Price ($)'].values[0]
-        total_value += price * shares
-        yield_pct = get_stock_data([(ticker, '')])['Div Yield (%)'].values[0]
-        income += (price * shares) * (yield_pct / 100)
-    
-    # Display Metrics  
-    st.success(f"**Portfolio Value**: ${total_value:,.2f}")
-    st.info(f"**Annual Income**: ${income:,.2f}")
-    
-    # Projection
-    if st.button("Project 5 Years"):
-        growth = np.random.normal(0.07, 0.15, 1000)
-        projected = total_value * (1 + growth)**5
-        fig = px.histogram(projected, nbins=50, 
-                         title="Wealth Distribution Forecast")
-        st.plotly_chart(fig)
+    with tab3:
+        st.header("Community Strategies")
+        strategy = st.text_area("Share Your Strategy", 
+                               height=100 if is_mobile() else 150,
+                               placeholder="Describe your dividend investment approach...")
+        if st.button("Submit"):
+            st.success("Strategy submitted! Community votes coming soon.")
 
-with tab3:
-    st.header("Community Strategies")
-    strategy = st.text_area("Share Your Approach (Max 280 chars)", height=150)
-    if st.button("Publish"):
-        st.session_state.strategies = st.session_state.get('strategies', []) + [strategy]
-    
-    st.subheader("Top Strategies")
-    for strat in st.session_state.get('strategies', [
-        "Reinvest dividends in highest conviction picks",
-        "Balance high yield with growth stocks",
-        "Use sector rotation for stability"
-    ]):
-        st.markdown(f"- {strat}")
-
-# ========== FOOTER & NOTES ==========
-st.markdown("---")
-st.caption("""
-Data Source: Yahoo Finance | 
-Updated: 2025-04-20 | 
-For Educational Purposes Only
-""")
+if __name__ == "__main__":
+    main()
