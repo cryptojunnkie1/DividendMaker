@@ -10,7 +10,7 @@ import plotly.express as px
 from datetime import datetime
 
 # ========== DATA SETUP ==========
-dividend_aristocrats = [
+DIVIDEND_ARISTOCRATS = [
     ('JNJ', 'Johnson & Johnson'), ('PG', 'Procter & Gamble'), 
     ('KO', 'Coca-Cola'), ('PEP', 'PepsiCo'), ('ABBV', 'AbbVie'),
     ('TGT', 'Target'), ('ED', 'Consolidated Edison'), ('MMM', '3M Company'),
@@ -34,7 +34,7 @@ dividend_aristocrats = [
     ('TR', 'Tootsie Roll Industries'), ('VFC', 'V.F. Corporation')
 ]
 
-other_dividend_stocks = [
+HIGH_YIELD_STOCKS = [
     ('O', 'Realty Income'), ('MAIN', 'Main Street Capital'),
     ('HD', 'Home Depot'), ('LOW', "Lowe's"),
     ('IBM', 'International Business Machines'), ('AFL', 'Aflac'),
@@ -76,7 +76,7 @@ other_dividend_stocks = [
     ('WMB', 'Williams Companies'), ('XEL', 'Xcel Energy')
 ]
 
-paper_chasn_stocks = [
+PAPERCHASN_STOCKS = [
     ('ABBV', 'AbbVie'), ('CVX', 'Chevron'),
     ('TROW', 'T. Rowe Price'), ('C', 'Citigroup'),
     ('BBY', 'Best Buy'), ('O', 'Realty Income'),
