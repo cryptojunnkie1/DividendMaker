@@ -160,6 +160,51 @@ paper_chasn_stocks = [
     ('BTG', 'B2Gold')
 ]
 
+# Reiva'j Retirement Fund
+reiva_j_retirement_fund = [
+    ('BPRIX', 'BlackRock Inflation Protected Bond Instl'),
+    ('FIHBX', 'Federated Inst High Yield Bond Inst'),
+    ('FBNRX', 'Templeton Global Bond R6'),
+    ('FGBMX', 'Fidelity Advisor New Markets Income Z'),
+    ('RIDGX', 'American Funds Inc Fund of Amer R6'),
+    ('CSRSX', 'Cohen & Steers Realty Shares'),
+    ('MEIJX', 'MFS Value R4'),
+    ('SAPYX', 'ClearBridge Appreciation I'),
+    ('VIIIX', 'Vanguard Institutional Index Instl PL'),
+    ('RGAGX', 'American Funds Growth Fund of Amer R6'),
+    ('NRSRX', 'Neuberger Berman Sustainable Equity R6'),
+    ('TILIX', 'TIAA-CREF Large-Cap Growth Index Fund—Institutional'),
+    ('TILGX', 'TIAA-CREF Large-Cap Growth Fund—Institutional'),
+    ('TILVX', 'TIAA-CREF Large-Cap Value Index Fund—Institutional'),
+    ('TIEIX', 'TIAA-CREF Equity Index Fund—Institutional'),
+    ('TISPX', 'TIAA-CREF S&P 500 Index Fund—Institutional'),
+    ('VASVX', 'Vanguard Selected Value'),
+    ('TIMVX', 'TIAA-CREF Mid-Cap Value Fund—Institutional'),
+    ('VMCIX', 'Vanguard Mid-Cap Index Ins'),
+    ('JAENX', 'Janus Henderson Enterprise T'),
+    ('VMGMX', 'Vanguard Mid-Cap Growth Index Admiral'),
+    ('GSSIX', 'Goldman Sachs Small Cap Value Inst'),
+    ('VSCIX', 'Vanguard Small Cap Index Instl'),
+    ('TISBX', 'TIAA-CREF Small-Cap Blend Index Fund—Institutional'),
+    ('TISEX', 'TIAA-CREF Small-Cap Equity Fund—Institutional'),
+    ('OTIIX', 'T. Rowe Price Small Cap Stock I'),
+    ('AAERX', 'American Beacon International Equity R6'),
+    ('VTSNX', 'Vanguard Total International Stock Index Ins'),
+    ('MIDJX', 'MFS International New Discovery R4'),
+    ('VREMX', 'Virtus Vontobel Emerging Markets Opportunities R6'),
+    ('TCIEX', 'TIAA-CREF International Equity Index Fund—Institutional'),
+    ('TEQLX', 'TIAA-CREF Emerging Markets Equity Index Fund—Institutional'),
+    ('TIGRX', 'TIAA-CREF Growth & Income Fund—Institutional'),
+    ('TISCX', 'TIAA-CREF Social Choice Equity Fund—Institutional'),
+    ('TIREX', 'TIAA-CREF Real Estate Securities Fund—Institutional'),
+    ('TIILX', 'TIAA-CREF Inflation-Linked Bond Fund—Institutional'),
+    ('TBIIX', 'TIAA-CREF Bond Index Fund—Institutional'),
+    ('TIBDX', 'TIAA-CREF Bond Fund—Institutional'),
+    ('TIBFX', 'TIAA-CREF Bond Plus Fund—Institutional'),
+    ('TIHYX', 'TIAA-CREF High-Yield Fund—Institutional'),
+    ('CREF', 'CREF Stock Account R2')
+]
+
 # ========== Helper Functions ==========
 def get_stock_data(tickers):
     data = []
@@ -325,6 +370,89 @@ if not other_df.empty:
 
 # Analysis for Other Dividend stocks
 for _, row in other_df.iterrows():
+    with st.expander(f"{row['Ticker']} - {row['Company']}"):
+        st.subheader("Investment Thesis")
+        st.markdown(f"""
+        **Why Hold:**  
+        - {row['Company']} maintains a {row['Div Yield (%)']:.2f}% dividend yield with
+        {row['5Y Div Growth (%)']:.2f}% average annual growth over 5 years.
+        - Payout ratio of {row['Payout Ratio (%)']:.1f}% suggests sustainability.
+        
+        **Dividend Projections ({shares_owned} shares):**  
+        - Annual Dividend Income: **${row['Price ($)'] * shares_owned * row['Div Yield (%)'] / 100:.2f}**  
+        - 5-Year Projected Income (7% growth): **${row['Price ($)'] * shares_owned * row['Div Yield (%)'] / 100 * ((1.07 ** 5 - 1) / 0.07):.2f}**
+
+        **Valuation:**  
+        - Current P/E: {row['P/E Ratio']:.1f} vs Sector Average: {row['P/E Ratio'] * 0.9:.1f}
+        """)
+
+        # Fundamental Analysis
+        st.markdown(f"""
+        **Fundamental Analysis**  
+        • Current Yield: {row['Div Yield (%)']:.2f}% (S&P 500 Avg: 1.5%)  
+        • 5Y Dividend Growth: {row['5Y Div Growth (%)'] if row['5Y Div Growth (%)'] is not None else "nan"}%  
+        • Payout Ratio: {row['Payout Ratio (%)']:.1f}%  
+        • Market Cap: ${row['Market Cap ($B)']:.2f}B  
+        • Revenue Trend: {row['Revenue Growth (%)']:.2f}% YoY  
+        """)
+
+        # Yield Strength
+        st.markdown(f"Yield Strength: {(row['Div Yield (%)'] / 1.5):.2f}x Market Average")
+
+        # Risk/Reward Profile
+        st.markdown(f"""
+        **Risk/Reward Profile**  
+        - Volatility Score: {(100 - abs(row['Payout Ratio (%)'] - 75)):.1f}/100  
+        - Yield Sustainability: {"🔴 High Risk" if row['Payout Ratio (%)'] > 90 else "🟡 Moderate" if row['Payout Ratio (%)'] > 75 else "🟢 Stable"}  
+        - Growth Potential: {"⭐" * int(row['Revenue Growth (%)'] / 5)}  
+        - Value Indicator: {"Undervalued" if row['P/E Ratio'] < 15 else "Fair" if row['P/E Ratio'] < 25 else "Overvalued"}  
+        """)
+
+        # Strategic Rationale
+        st.markdown(f"""
+        **Strategic Rationale**  
+        - Projected 5Y Total Return: {0.4 * row['Div Yield (%)'] + 0.6 * row['Revenue Growth (%)']:.1f}%  
+        - Dividend Coverage Ratio: {min(100 / (row['Payout Ratio (%)'] or 1), 5):.1f}x  
+        - Sector Weighting Impact: {["Enhances Diversification", "Concentrates Exposure"][row['Market Cap ($B)'] > 50]}  
+        """)
+
+# ========== Reiva'j Retirement Fund Analysis Section ==========
+st.header("Reiva'j Retirement Fund Analysis")
+reiva_j_df = get_stock_data(reiva_j_retirement_fund)
+st.dataframe(
+    reiva_j_df.style.format({
+        'Price ($)': '{:.2f}',
+        'Div Yield (%)': '{:.2f}%',
+        '5Y Div Growth (%)': '{:.2f}%',
+        'Payout Ratio (%)': '{:.1f}%',
+        'Market Cap ($B)': '${:.2f}B',
+        'Revenue Growth (%)': '{:.2f}%'
+    }),
+    height=400
+)
+
+# Projections for Reiva'j Retirement Fund
+if not reiva_j_df.empty:
+    total_price_reiva_j = reiva_j_df['Price ($)'].sum()
+    avg_div_yield_reiva_j = reiva_j_df['Div Yield (%)'].mean() / 100  # Convert to decimal
+    annual_div_reiva_j = (reiva_j_df['Price ($)'] * reiva_j_df['Div Yield (%)'] / 100).sum()
+
+    # Total projected value with reinvestment
+    total_projected_value_reiva_j = total_price_reiva_j  # Start with initial investment
+    for year in range(1, 6):
+        annual_div_reiva_j = (total_projected_value_reiva_j * avg_div_yield_reiva_j)  # Dividends for the year
+        total_projected_value_reiva_j += annual_div_reiva_j * (1 + 0.07)  # Reinvest with projected growth
+
+    st.markdown(f"""
+    **Reiva'j Retirement Fund Portfolio**  
+    - Total Investment: ${total_price_reiva_j:,.2f}  
+    - Immediate Annual Dividends: ${annual_div_reiva_j:.2f}  
+    - Total Projected Value (5-Year With Reinvestment): ${total_projected_value_reiva_j:,.2f}
+    - Average Yield: {reiva_j_df['Div Yield (%)'].mean():.2f}%
+    """)
+
+# Analysis for Reiva'j Retirement Fund stocks
+for _, row in reiva_j_df.iterrows():
     with st.expander(f"{row['Ticker']} - {row['Company']}"):
         st.subheader("Investment Thesis")
         st.markdown(f"""
@@ -548,7 +676,7 @@ with tab2:
         **PaperChasn Portfolio**  
         - Total Investment: ${total_price_paper:,.2f}  
         - Immediate Annual Dividends: ${annual_div_paper:.2f}  
-        - 5-Year Projection (7% growth): ${five_year_paper:,.2f}  
+        - 5-Year Projection (7% growth): ${five_year_paper:.2f}  
         - Average Yield: {paper_chasn_df['Div Yield (%)'].mean():.2f}%
         """)
 
