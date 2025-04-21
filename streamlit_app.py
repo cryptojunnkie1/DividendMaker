@@ -214,17 +214,20 @@ def get_stock_data(tickers):
             stock = yf.Ticker(ticker)
             info = stock.info
             history = stock.history(period="5y")
-            
+
             div_yield = info.get('dividendYield', 0) if info.get('dividendYield') else 0
             pe_ratio = info.get('trailingPE')
             payout_ratio = info.get('payoutRatio')
             market_cap = info.get('marketCap')
 
-            # Handling Dividend Growth Calculation
+            # Calculate Dividend Growth
             try:
-                div_growth_5y = history['Dividends'].pct_change(periods=252 * 5).mean() * 100
+                if 'Dividends' in history:
+                    div_growth_5y = history['Dividends'].pct_change(periods=252 * 5).mean() * 100
+                else:
+                    div_growth_5y = "N/A"  # Handle if 'Dividends' data is not present
             except Exception:
-                div_growth_5y = "N/A"  # Handle if 'Dividends' data is unavailable
+                div_growth_5y = "N/A"  # Fallback if error occurs
 
             data.append({
                 'Ticker': ticker,
@@ -248,7 +251,7 @@ st.subheader("Portfolio Builder for Long-Term Investors")
 # User input for shares owned
 shares_owned = st.number_input("Enter number of shares you plan to hold:", min_value=1, value=1)
 
-# Main analysis section
+# Main analysis section with two columns
 col1, col2 = st.columns([3, 2])
 
 # Dividend Aristocrats Analysis
@@ -364,7 +367,7 @@ if not other_df.empty:
     # Total projected value with reinvestment
     total_projected_value_other = total_price_other  # Start with initial investment
     for year in range(1, 6):
-        annual_div_other = (total_projected_value_other * avg_div_yield_other)  # Dividends for the year
+        annual_div_other = (total_projected_value_other * avg_div_yield_other) 
         total_projected_value_other += annual_div_other * (1 + 0.07)  # Reinvest with projected growth
 
     st.markdown(f"""
@@ -375,7 +378,7 @@ if not other_df.empty:
     - Average Yield: {other_df['Div Yield (%)'].mean():.2f}%
     """)
 
-# Analysis for Other Dividend Stocks
+# Analysis for Other Dividend stocks
 for _, row in other_df.iterrows():
     with st.expander(f"{row['Ticker']} - {row['Company']}"):
         st.subheader("Investment Thesis")
@@ -431,9 +434,7 @@ st.dataframe(
         'Price ($)': '{:.2f}',
         'Div Yield (%)': '{:.2f}%',
         '5Y Div Growth (%)': '{:.2f}%',
-        'Payout Ratio (%)': '{:.1f}%',
-        'Market Cap ($B)': '${:.2f}B',
-        'Revenue Growth (%)': '{:.2f}%'
+        'Payout Ratio (%)': '{:.1f}%'
     }),
     height=400
 )
