@@ -7,7 +7,6 @@ from datetime import datetime
 st.set_page_config(page_title="Dividend Aristocrat Analyzer", layout="wide")
 
 # ========== Data Setup ==========
-# List of dividend aristocrats and other dividend stocks
 dividend_aristocrats = [
     ('JNJ', 'Johnson & Johnson'),
     ('PG', 'Procter & Gamble'),
@@ -215,30 +214,28 @@ def get_stock_data(tickers):
             info = stock.info
             history = stock.history(period="5y")
 
-            div_yield = info.get('dividendYield', 0) if info.get('dividendYield') else 0
-            pe_ratio = info.get('trailingPE')
-            payout_ratio = info.get('payoutRatio')
-            market_cap = info.get('marketCap')
+            div_yield = info.get('dividendYield', None)
+            pe_ratio = info.get('trailingPE', None)
+            payout_ratio = info.get('payoutRatio', None)
+            market_cap = info.get('marketCap', None)
 
-            # Calculate Dividend Growth
-            try:
-                if 'Dividends' in history:
-                    div_growth_5y = history['Dividends'].pct_change(periods=252 * 5).mean() * 100
-                else:
-                    div_growth_5y = "N/A"  # Handle if 'Dividends' data is not present
-            except Exception:
-                div_growth_5y = "N/A"  # Fallback if error occurs
+            # Calculate Dividend Growth, handle cases where no data is available
+            if 'Dividends' in history:
+                div_growth_5y = history['Dividends'].pct_change(periods=252 * 5).mean() * 100
+            else:
+                div_growth_5y = "N/A"  # Handle if no dividends data available
 
+            # Append stock data, handling None types gracefully
             data.append({
                 'Ticker': ticker,
                 'Company': name,
-                'Price ($)': info.get('currentPrice'),
-                'Div Yield (%)': div_yield * 100,  # Convert to percentage
+                'Price ($)': info.get('currentPrice', None),
+                'Div Yield (%)': div_yield * 100 if div_yield is not None else None,  # Convert to percentage
                 '5Y Div Growth (%)': div_growth_5y,
-                'Payout Ratio (%)': (payout_ratio * 100) if payout_ratio else None,
+                'Payout Ratio (%)': (payout_ratio * 100) if payout_ratio is not None else None,
                 'P/E Ratio': pe_ratio,
-                'Market Cap ($B)': round(market_cap / 1e9, 2) if market_cap else None,
-                'Revenue Growth (%)': info.get('revenueGrowth', 0) * 100
+                'Market Cap ($B)': round(market_cap / 1e9, 2) if market_cap is not None else None,
+                'Revenue Growth (%)': info.get('revenueGrowth', 0) * 100 if isinstance(info.get('revenueGrowth', 0), (int, float)) else 0
             })
         except Exception as e:
             st.error(f"Error fetching data for {ticker}: {str(e)}")
@@ -262,11 +259,11 @@ with col1:
     # Display the data frame using styled format
     st.dataframe(
         aristocrats_df.style.format({
-            'Price ($)': '{:.2f}',
-            'Div Yield (%)': '{:.2f}%',
+            'Price ($)': '{:.2f}' if isinstance(aristocrats_df['Price ($)'].iloc[0], (int, float)) else '{}',
+            'Div Yield (%)': '{:.2f}%' if isinstance(aristocrats_df['Div Yield (%)'].iloc[0], (int, float)) else '{}',
             '5Y Div Growth (%)': '{:.2f}%' if isinstance(aristocrats_df['5Y Div Growth (%)'].iloc[0], (int, float)) else '{}',
             'Payout Ratio (%)': '{:.1f}%' if isinstance(aristocrats_df['Payout Ratio (%)'].iloc[0], (int, float)) else '{}',
-            'Market Cap ($B)': '${:.2f}B',
+            'Market Cap ($B)': '${:.2f}B' if isinstance(aristocrats_df['Market Cap ($B)'].iloc[0], (int, float)) else '{}',
             'Revenue Growth (%)': '{:.2f}%' if isinstance(aristocrats_df['Revenue Growth (%)'].iloc[0], (int, float)) else '{}'
         }),
         height=600
@@ -431,10 +428,10 @@ st.header("Reiva'j Retirement Fund Analysis")
 reiva_j_df = get_stock_data(reiva_j_retirement_fund)
 st.dataframe(
     reiva_j_df.style.format({
-        'Price ($)': '{:.2f}',
-        'Div Yield (%)': '{:.2f}%',
-        '5Y Div Growth (%)': '{:.2f}%',
-        'Payout Ratio (%)': '{:.1f}%'
+        'Price ($)': '{:.2f}' if isinstance(reiva_j_df['Price ($)'].iloc[0], (int, float)) else '{}',
+        'Div Yield (%)': '{:.2f}%' if isinstance(reiva_j_df['Div Yield (%)'].iloc[0], (int, float)) else '{}',
+        '5Y Div Growth (%)': '{:.2f}%' if isinstance(reiva_j_df['5Y Div Growth (%)'].iloc[0], (int, float)) else '{}',
+        'Payout Ratio (%)': '{:.1f}%' if isinstance(reiva_j_df['Payout Ratio (%)'].iloc[0], (int, float)) else '{}',
     }),
     height=400
 )
@@ -514,12 +511,12 @@ paper_chasn_df = get_stock_data(paper_chasn_stocks)
 # Display the dataframe for PaperChasn stocks
 st.dataframe(
     paper_chasn_df.style.format({
-        'Price ($)': '{:.2f}',
-        'Div Yield (%)': '{:.2f}%',
-        '5Y Div Growth (%)': '{:.2f}%',
-        'Payout Ratio (%)': '{:.1f}%',
-        'Market Cap ($B)': '${:.2f}B',
-        'Revenue Growth (%)': '{:.2f}%'
+        'Price ($)': '{:.2f}' if isinstance(paper_chasn_df['Price ($)'].iloc[0], (int, float)) else '{}',
+        'Div Yield (%)': '{:.2f}%' if isinstance(paper_chasn_df['Div Yield (%)'].iloc[0], (int, float)) else '{}',
+        '5Y Div Growth (%)': '{:.2f}%' if isinstance(paper_chasn_df['5Y Div Growth (%)'].iloc[0], (int, float)) else '{}',
+        'Payout Ratio (%)': '{:.1f}%' if isinstance(paper_chasn_df['Payout Ratio (%)'].iloc[0], (int, float)) else '{}',
+        'Market Cap ($B)': '${:.2f}B' if isinstance(paper_chasn_df['Market Cap ($B)'].iloc[0], (int, float)) else '{}',
+        'Revenue Growth (%)': '{:.2f}%' if isinstance(paper_chasn_df['Revenue Growth (%)'].iloc[0], (int, float)) else '{}'
     }),
     height=400
 )
