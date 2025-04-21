@@ -654,47 +654,66 @@ tab1, tab2, tab3 = st.tabs([
     "PaperChasn Only",
     "Combined Strategy"
 ])
+
 with tab1:
     if not aristocrats_df.empty:
-        total_price = aristocrats_df['Price ($)'].sum()
-        annual_div = (aristocrats_df['Price ($)'] * aristocrats_df['Div Yield (%)'] / 100).sum()
-        five_year_factor = (1.07 ** 5 - 1) / 0.07
-        five_year_total = annual_div * five_year_factor
-        st.markdown(f"""
-        **Aristocrats Portfolio**  
-        - Total Investment: ${total_price:,.2f}  
-        - Immediate Annual Dividends: ${annual_div:,.2f}  
-        - 5-Year Projection (7% growth): ${five_year_total:,.2f}  
-        """)
+        # Check if 'Dividends' column exists
+        if 'Dividends' not in aristocrats_df.columns:
+            st.warning("Dividends data is not available for Aristocrats.")
+        else:
+            total_price = aristocrats_df['Price ($)'].sum()
+            annual_div = (aristocrats_df['Price ($)'] * aristocrats_df['Div Yield (%)'] / 100).sum()
+            five_year_factor = (1.07 ** 5 - 1) / 0.07
+            five_year_total = annual_div * five_year_factor
+            
+            # Debugging output for missing dividends
+            for index, row in aristocrats_df.iterrows():
+                if pd.isnull(row.get('Dividends')):
+                    print(f"Missing dividends for {row['Ticker']}")
+
+            st.markdown(f"""
+            **Aristocrats Portfolio**  
+            - Total Investment: ${total_price:,.2f}  
+            - Immediate Annual Dividends: ${annual_div:,.2f}  
+            - 5-Year Projection (7% growth): ${five_year_total:,.2f}  
+            """)
 
 with tab2:
     if not paper_chasn_df.empty:
-        total_price_paper = paper_chasn_df['Price ($)'].sum()
-        annual_div_paper = (paper_chasn_df['Price ($)'] * paper_chasn_df['Div Yield (%)']/100).sum()
-        five_year_paper = annual_div_paper * ((1.07 ** 5 - 1) / 0.07)
-        st.markdown(f"""
-        **PaperChasn Portfolio**  
-        - Total Investment: ${total_price_paper:,.2f}  
-        - Immediate Annual Dividends: ${annual_div_paper:.2f}  
-        - 5-Year Projection (7% growth): ${five_year_paper:.2f}  
-        - Average Yield: {paper_chasn_df['Div Yield (%)'].mean():.2f}%
-        """)
+        if 'Dividends' not in paper_chasn_df.columns:
+            st.warning("Dividends data is not available for PaperChasn.")
+        else:
+            total_price_paper = paper_chasn_df['Price ($)'].sum()
+            annual_div_paper = (paper_chasn_df['Price ($)'] * paper_chasn_df['Div Yield (%)']/100).sum()
+            five_year_paper = annual_div_paper * ((1.07 ** 5 - 1) / 0.07)
+            
+            st.markdown(f"""
+            **PaperChasn Portfolio**  
+            - Total Investment: ${total_price_paper:,.2f}  
+            - Immediate Annual Dividends: ${annual_div_paper:.2f}  
+            - 5-Year Projection (7% growth): ${five_year_paper:.2f}  
+            - Average Yield: {paper_chasn_df['Div Yield (%)'].mean():.2f}%
+            """)
 
 with tab3:
     combined_df = pd.concat([aristocrats_df, paper_chasn_df])
     if not combined_df.empty:
-        total_combined = combined_df['Price ($)'].sum()
-        annual_combined = (combined_df['Price ($)'] * combined_df['Div Yield (%)'] / 100).sum()
-        five_year_combined = annual_combined * ((1.07 ** 5 - 1) / 0.07)
-        st.markdown(f"""
-        **Combined Strategy Portfolio**  
-        - Total Investment: ${total_combined:,.2f}  
-        - Immediate Annual Dividends: ${annual_combined:,.2f}  
-        - 5-Year Projection (7% growth): ${five_year_combined:,.2f}  
-        - Yield Composition:  
-          • Aristocrats: {aristocrats_df['Div Yield (%)'].mean():.2f}%  
-          • PaperChasn: {paper_chasn_df['Div Yield (%)'].mean():.2f}%
-        """)
+        if 'Dividends' not in combined_df.columns:
+            st.warning("Dividends data is not available for the Combined Strategy.")
+        else:
+            total_combined = combined_df['Price ($)'].sum()
+            annual_combined = (combined_df['Price ($)'] * combined_df['Div Yield (%)'] / 100).sum()
+            five_year_combined = annual_combined * ((1.07 ** 5 - 1) / 0.07)
+            
+            st.markdown(f"""
+            **Combined Strategy Portfolio**  
+            - Total Investment: ${total_combined:,.2f}  
+            - Immediate Annual Dividends: ${annual_combined:,.2f}  
+            - 5-Year Projection (7% growth): ${five_year_combined:,.2f}  
+            - Yield Composition:  
+              • Aristocrats: {aristocrats_df['Div Yield (%)'].mean():.2f}%  
+              • PaperChasn: {paper_chasn_df['Div Yield (%)'].mean():.2f}%
+            """)
 
 # ========== Usage Instructions ==========
 st.sidebar.markdown("""
