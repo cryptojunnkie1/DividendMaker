@@ -214,11 +214,7 @@ def get_stock_data(tickers):
             info = stock.info
             history = stock.history(period="5y")
 
-            # Collect relevant data with error handling
-            div_yield = info.get('dividendYield')
-            if div_yield is not None:
-                div_yield *= 100  # convert to percentage
-
+            div_yield = info.get('dividendYield', None)  # Get the dividend yield directly
             payout_ratio = info.get('payoutRatio', None)
             pe_ratio = info.get('trailingPE', None)
             market_cap = info.get('marketCap', None)
