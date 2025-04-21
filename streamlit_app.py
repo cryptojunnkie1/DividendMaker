@@ -7,6 +7,7 @@ from datetime import datetime
 st.set_page_config(page_title="Dividend Aristocrat Analyzer", layout="wide")
 
 # ========== Data Setup ==========
+# List of dividend aristocrats and other dividend stocks
 dividend_aristocrats = [
     ('JNJ', 'Johnson & Johnson'),
     ('PG', 'Procter & Gamble'),
@@ -214,29 +215,17 @@ def get_stock_data(tickers):
             info = stock.info
             history = stock.history(period="5y")
             
-            # Get stock data
             div_yield = info.get('dividendYield', 0) if info.get('dividendYield') else 0
             pe_ratio = info.get('trailingPE')
             payout_ratio = info.get('payoutRatio')
             market_cap = info.get('marketCap')
 
-            # Historical dividends for calculating dividend growth
-            dividends = history['Dividends']
-            if len(dividends) > 0:
-                div_begin = dividends.iloc[0]  # Dividend 5 years ago
-                div_end = dividends.iloc[-1]     # Most recent dividend
+            # Handling Dividend Growth Calculation
+            try:
+                div_growth_5y = history['Dividends'].pct_change(periods=252 * 5).mean() * 100
+            except Exception:
+                div_growth_5y = "N/A"  # Handle if 'Dividends' data is unavailable
 
-                if div_begin > 0:  # Ensure we do not divide by zero
-                    if div_end == div_begin:
-                        div_growth_5y = f"Constant at {div_begin:.2f}"  # No change
-                    else:
-                        div_growth_5y = ((div_end - div_begin) / div_begin) * 100  # Growth rate calculation
-                else:
-                    div_growth_5y = "No dividends over the period"  # Handling zero dividend start
-            else:
-                div_growth_5y = "No dividend data available"  # No dividend data available
-
-            # Append stock data to list
             data.append({
                 'Ticker': ticker,
                 'Company': name,
@@ -249,7 +238,6 @@ def get_stock_data(tickers):
                 'Revenue Growth (%)': info.get('revenueGrowth', 0) * 100
             })
         except Exception as e:
-            # Error handling when fetching ticker data
             st.error(f"Error fetching data for {ticker}: {str(e)}")
     return pd.DataFrame(data)
 
@@ -267,18 +255,20 @@ col1, col2 = st.columns([3, 2])
 with col1:
     st.header("Dividend Aristocrats Analysis")
     aristocrats_df = get_stock_data(dividend_aristocrats)
+    
+    # Display the data frame using styled format
     st.dataframe(
         aristocrats_df.style.format({
             'Price ($)': '{:.2f}',
             'Div Yield (%)': '{:.2f}%',
-            '5Y Div Growth (%)': '{:.2f}%',
-            'Payout Ratio (%)': '{:.1f}%',
+            '5Y Div Growth (%)': '{:.2f}%' if isinstance(aristocrats_df['5Y Div Growth (%)'].iloc[0], (int, float)) else '{}',
+            'Payout Ratio (%)': '{:.1f}%' if isinstance(aristocrats_df['Payout Ratio (%)'].iloc[0], (int, float)) else '{}',
             'Market Cap ($B)': '${:.2f}B',
-            'Revenue Growth (%)': '{:.2f}%'
+            'Revenue Growth (%)': '{:.2f}%' if isinstance(aristocrats_df['Revenue Growth (%)'].iloc[0], (int, float)) else '{}'
         }),
         height=600
     )
-    
+
     # Calculate projections for Dividend Aristocrats
     if not aristocrats_df.empty:
         total_price_aristocrats = aristocrats_df['Price ($)'].sum()
@@ -302,6 +292,7 @@ with col1:
 # Other Dividend Stocks Analysis
 with col2:
     st.header("Stock Analysis Reports")
+    
     for _, row in aristocrats_df.iterrows():
         with st.expander(f"{row['Ticker']} - {row['Company']}"):
             st.subheader("Investment Thesis")
@@ -310,11 +301,11 @@ with col2:
             - {row['Company']} maintains a {row['Div Yield (%)']:.2f}% dividend yield with
             {row['5Y Div Growth (%)']:.2f}% average annual growth over 5 years.
             - Payout ratio of {row['Payout Ratio (%)']:.1f}% suggests sustainability.
-            
+
             **Dividend Projections ({shares_owned} shares):**  
             - Annual Dividend Income: **${row['Price ($)'] * shares_owned * row['Div Yield (%)'] / 100:.2f}**  
             - 5-Year Projected Income (7% growth): **${row['Price ($)'] * shares_owned * row['Div Yield (%)'] / 100 * ((1.07 ** 5 - 1) / 0.07):.2f}**
-            
+
             **Valuation:**  
             - Current P/E: {row['P/E Ratio']:.1f} vs Sector Average: {row['P/E Ratio'] * 0.9:.1f}
             """)
@@ -384,7 +375,7 @@ if not other_df.empty:
     - Average Yield: {other_df['Div Yield (%)'].mean():.2f}%
     """)
 
-# Analysis for Other Dividend stocks
+# Analysis for Other Dividend Stocks
 for _, row in other_df.iterrows():
     with st.expander(f"{row['Ticker']} - {row['Company']}"):
         st.subheader("Investment Thesis")
@@ -547,7 +538,7 @@ for _, row in paper_chasn_df.iterrows():
             • Revenue Trend: {row['Revenue Growth (%)']:.2f}% YoY  
             """)
             
-            st.progress(value=min(row['Div Yield (%)'] / 15, 1), 
+            st.progress(value=min(row['Div Yield (%)'] / 15, 1),
                        text=f"Yield Strength: {row['Div Yield (%)'] / 1.5:.2f}x Market Average")
 
         with col_b:
@@ -717,8 +708,8 @@ with tab3:
 st.sidebar.markdown("""
 **How to Use:**  
 
-1. Enter planned share count in main input  
-2. Explore Aristocrats in left table  
+1. Enter planned share count in the main input  
+2. Explore Aristocrats in the left table  
 3. Click ➕ icons for detailed analysis  
 4. Compare all stock categories sequentially  
 5. Analyze different portfolio strategies via tabs  
