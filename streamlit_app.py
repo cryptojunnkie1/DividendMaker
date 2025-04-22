@@ -192,19 +192,46 @@ def get_stock_data(tickers):
     return pd.DataFrame(data)
 
 # ========== Dynamic Insights Function ==========
+# Function to generate insights based on stock metrics
 def generate_insight(stock):
-    high_yield_stocks = ['O', 'NEE', 'WEC', 'ED']  # Example high-yield stocks
-    growth_stocks = ['AAPL', 'TSLA', 'AMZN']  # Example growth stocks
-    value_stocks = ['CVX', 'XOM', 'JNJ']  # Example value stocks
-
-    if stock in high_yield_stocks:
-        return f"{stock}: Consider holding this high-yield stock for steady income and potential capital appreciation."
-    elif stock in growth_stocks:
-        return f"{stock}: This growth stock has strong potential for capital appreciation; consider a long-term hold."
-    elif stock in value_stocks:
-        return f"{stock}: This stock appears undervalued; it may be a good opportunity for value investing."
+    # Example metrics
+    avg_div_yield = combined_df['Div Yield (%)'].mean()
+    avg_growth = combined_df['5Y Div Growth (%)'].mean()
+    payout_ratio = stock['Payout Ratio (%)']
+    div_yield = stock['Div Yield (%)']
+    growth_rate = stock['5Y Div Growth (%)']
+    
+    insights = []
+    
+    # Insight based on dividend yield
+    if div_yield > avg_div_yield:
+        insights.append("Strong dividend yield compared to peers.")
     else:
-        return f"{stock}: Research further to understand its potential in your portfolio."
+        insights.append("Consider potential for yield improvement.")
+
+    # Insight based on growth rate
+    if growth_rate > avg_growth:
+        insights.append("Solid growth trajectory; consider for long-term hold.")
+    else:
+        insights.append("Evaluate growth strategy; may need further analysis.")
+
+    # Insight based on payout ratio
+    if payout_ratio < 60:
+        insights.append("Healthy payout ratio; dividend sustainability looks good.")
+    elif payout_ratio < 80:
+        insights.append("Moderate payout ratio; monitor for sustainability.")
+    else:
+        insights.append("High payout ratio; assess risk of dividend cuts.")
+
+    # Combine insights into a single string
+    return " ".join(insights)
+
+# Usage in the Streamlit app
+for _, row in combined_df.iterrows():
+    with st.expander(f"{row['Ticker']} - {row['Company']}"):
+        st.subheader("Investment Thesis")
+        insight = generate_insight(row)
+        st.markdown(f"**Insight:** {insight}")
 
 # ========== Dynamic Analysis Function ==========
 def dynamic_analysis(all_stocks_df):
