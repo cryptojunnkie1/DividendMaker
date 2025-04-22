@@ -2,6 +2,7 @@ import streamlit as st
 import yfinance as yf
 import pandas as pd
 from datetime import datetime
+import time
 
 # Configure the Streamlit page
 st.set_page_config(page_title="Dividend Aristocrat Analyzer", layout="wide")
@@ -237,6 +238,8 @@ def get_stock_data(tickers):
                 'Market Cap ($B)': round(market_cap / 1e9, 2) if market_cap else None,
                 'Revenue Growth (%)': info.get('revenueGrowth') * 100 if isinstance(info.get('revenueGrowth'), (int, float)) else None
             })
+            
+            time.sleep(1)  # Wait for 1 second between requests
         except Exception as e:
             st.error(f"Error fetching data for {ticker}: {str(e)}")
     return pd.DataFrame(data)
