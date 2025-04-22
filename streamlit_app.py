@@ -1,7 +1,11 @@
+Here’s the modified version of your Streamlit application code, incorporating the caching mechanism to check for existing market data. This version will load saved data if it's up to date, otherwise, it will fetch new data from the Yahoo Finance API.
+
+```python
 import streamlit as st
 import yfinance as yf
 import pandas as pd
 from datetime import datetime
+import os
 import time
 
 # Configure the Streamlit page
@@ -207,7 +211,34 @@ reiva_j_retirement_fund = [
 ]
 
 # ========== Helper Functions ==========
+DATA_FILE = 'market_data.csv'  # Path to your data file
+
+def load_market_data():
+    """Load market data from a local file."""
+    if os.path.exists(DATA_FILE):
+        return pd.read_csv(DATA_FILE, parse_dates=['date'])
+    return None
+
+def save_market_data(data):
+    """Save market data to a local file."""
+    data.to_csv(DATA_FILE, index=False)
+
+def is_data_up_to_date(data):
+    """Check if the data is up to date."""
+    if data is not None and not data.empty:
+        last_update_date = data['date'].max().date()  # Assuming 'date' column exists
+        return last_update_date == datetime.today().date()
+    return False
+
 def get_stock_data(tickers):
+    # Load existing data
+    existing_data = load_market_data()
+
+    # Check if data is up to date
+    if is_data_up_to_date(existing_data):
+        st.info("Using cached data.")
+        return existing_data
+
     data = []
     for ticker, name in tickers:
         try:
@@ -236,13 +267,19 @@ def get_stock_data(tickers):
                 'Payout Ratio (%)': (payout_ratio * 100) if payout_ratio is not None else None,
                 'P/E Ratio': pe_ratio,
                 'Market Cap ($B)': round(market_cap / 1e9, 2) if market_cap else None,
-                'Revenue Growth (%)': info.get('revenueGrowth') * 100 if isinstance(info.get('revenueGrowth'), (int, float)) else None
+                'Revenue Growth (%)': info.get('revenueGrowth') * 100 if isinstance(info.get('revenueGrowth'), (int, float)) else None,
+                'date': datetime.today()  # Add today's date
             })
             
             time.sleep(1)  # Wait for 1 second between requests
         except Exception as e:
             st.error(f"Error fetching data for {ticker}: {str(e)}")
-    return pd.DataFrame(data)
+    
+    # Convert to DataFrame and save
+    new_data_df = pd.DataFrame(data)
+    save_market_data(new_data_df)
+
+    return new_data_df
 
 # ========== App Interface ==========
 st.title("Dividend Stock Analysis Toolkit")
@@ -325,7 +362,7 @@ with col2:
             # Yield Strength
             st.markdown(f"Yield Strength: {(row['Div Yield (%)'] / 1.5):.2f}x Market Average")
 
-            # Risk/Reward Profile
+                        # Risk/Reward Profile
             st.markdown(f"""
             **Risk/Reward Profile**  
             - Volatility Score: {(100 - abs(row['Payout Ratio (%)'] - 75)):.1f}/100  
@@ -494,7 +531,6 @@ for _, row in reiva_j_df.iterrows():
         • Market Cap: ${market_cap:.2f}B  
         • Revenue Trend: {revenue_growth:.2f}% YoY  
         """)
-
 
         # Yield Strength
         st.markdown(f"Yield Strength: {(row['Div Yield (%)'] / 1.5):.2f}x Market Average")
