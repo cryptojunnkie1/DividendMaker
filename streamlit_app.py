@@ -169,17 +169,17 @@ def get_stock_data(tickers):
             info = stock.info
             history = stock.history(period="5y")
             
-            div_yield = info.get('dividendYield', 0) if info.get('dividendYield') else 0
-            pe_ratio = info.get('trailingPE')
-            payout_ratio = info.get('payoutRatio')
-            market_cap = info.get('marketCap')
+            div_yield = info.get('dividendYield', 0) if 'dividendYield' in info else 0
+            pe_ratio = info.get('trailingPE', None)
+            payout_ratio = info.get('payoutRatio', None)
+            market_cap = info.get('marketCap', None)
             div_growth_5y = history['Dividends'].pct_change(periods=252 * 5).mean() * 100
             
             data.append({
                 'Ticker': ticker,
                 'Company': name,
-                'Price ($)': info.get('currentPrice'),
-                'Div Yield (%)': div_yield,  # Convert to percentage
+                'Price ($)': info.get('currentPrice', 0),
+                'Div Yield (%)': div_yield * 100,  # Convert to percentage
                 '5Y Div Growth (%)': div_growth_5y,
                 'Payout Ratio (%)': (payout_ratio * 100) if payout_ratio else None,
                 'P/E Ratio': pe_ratio,
@@ -188,6 +188,7 @@ def get_stock_data(tickers):
             })
         except Exception as e:
             st.error(f"Error fetching data for {ticker}: {str(e)}")
+            st.write("Info Dictionary:", info)  # Debugging output
     return pd.DataFrame(data)
 
 # ========== Dynamic Analysis Function ==========
