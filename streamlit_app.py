@@ -469,44 +469,44 @@ for _, row in reiva_j_df.iterrows():
         - {row['Company']} maintains a {row['Div Yield (%)']:.2f}% dividend yield with
         {row['5Y Div Growth (%)']:.2f}% average annual growth over 5 years.
         - Payout ratio of {row['Payout Ratio (%)']:.1f}% suggests sustainability.
-        
-        **Dividend Projections ({shares_owned} shares):**  
-        - Annual Dividend Income: **${row['Price ($)'] * shares_owned * row['Div Yield (%)'] / 100:.2f}**  
-        - 5-Year Projected Income (7% growth): **${row['Price ($)'] * shares_owned * row['Div Yield (%)'] / 100 * ((1.07 ** 5 - 1) / 0.07):.2f}**
-
-        **Valuation:**  
-        - Current P/E: {row['P/E Ratio']:.1f} vs Sector Average: {row['P/E Ratio'] * 0.9:.1f}
         """)
 
         # Fundamental Analysis
         st.markdown(f"""
         **Fundamental Analysis**  
         • Current Yield: {row['Div Yield (%)']:.2f}% (S&P 500 Avg: 1.5%)  
-        • 5Y Dividend Growth: {row['5Y Div Growth (%)'] if row['5Y Div Growth (%)'] is not None else "nan"}%  
-        • Payout Ratio: {row['Payout Ratio (%)']:.1f}%  
-        • Market Cap: ${row['Market Cap ($B)']:.2f}B  
-        • Revenue Trend: {row['Revenue Growth (%)']:.2f}% YoY  
+        • 5Y Dividend Growth: {row['5Y Div Growth (%)'] if row['5Y Div Growth (%)'] is not None else "N/A"}%  
+        • Payout Ratio: {row['Payout Ratio (%)']:.1f}% if row['Payout Ratio (%)'] is not None else "N/A"  
+        • Market Cap: ${row['Market Cap ($B)']:.2f}B if row['Market Cap ($B)'] is not None else "N/A"  
+        • Revenue Trend: {row['Revenue Growth (%)']:.2f}% YoY if row['Revenue Growth (%)'] is not None else "N/A"  
         """)
 
         # Yield Strength
-        st.markdown(f"Yield Strength: {(row['Div Yield (%)'] / 1.5):.2f}x Market Average")
+        yield_strength = row['Div Yield (%)'] / 1.5 if row['Div Yield (%)'] is not None else 0
+        st.markdown(f"Yield Strength: {yield_strength:.2f}x Market Average")
 
         # Risk/Reward Profile
+        payout_ratio = row['Payout Ratio (%)']
+        volatility_score = (100 - abs(payout_ratio - 75)) if payout_ratio is not None else 0
+        sustainability = "🔴 High Risk" if payout_ratio and payout_ratio > 90 else "🟡 Moderate" if payout_ratio and payout_ratio > 75 else "🟢 Stable"
+        
         st.markdown(f"""
         **Risk/Reward Profile**  
-        - Volatility Score: {(100 - abs(row['Payout Ratio (%)'] - 75)):.1f}/100  
-        - Yield Sustainability: {"🔴 High Risk" if row['Payout Ratio (%)'] > 90 else "🟡 Moderate" if row['Payout Ratio (%)'] > 75 else "🟢 Stable"}  
-        - Growth Potential: {"⭐" * int(row['Revenue Growth (%)'] / 5)}  
+        - Volatility Score: {volatility_score:.1f}/100  
+        - Yield Sustainability: {sustainability}  
+        - Growth Potential: {"⭐" * int(row['Revenue Growth (%)'] / 5) if row['Revenue Growth (%)'] is not None else "N/A"}  
         - Value Indicator: {"Undervalued" if row['P/E Ratio'] < 15 else "Fair" if row['P/E Ratio'] < 25 else "Overvalued"}  
         """)
 
         # Strategic Rationale
+        projected_return = 0.4 * (row['Div Yield (%)'] if row['Div Yield (%)'] is not None else 0) + 0.6 * (row['Revenue Growth (%)'] if row['Revenue Growth (%)'] is not None else 0)
         st.markdown(f"""
         **Strategic Rationale**  
-        - Projected 5Y Total Return: {0.4 * row['Div Yield (%)'] + 0.6 * row['Revenue Growth (%)']:.1f}%  
-        - Dividend Coverage Ratio: {min(100 / (row['Payout Ratio (%)'] or 1), 5):.1f}x  
+        - Projected 5Y Total Return: {projected_return:.1f}%  
+        - Dividend Coverage Ratio: {min(100 / (payout_ratio or 1), 5):.1f}x  
         - Sector Weighting Impact: {["Enhances Diversification", "Concentrates Exposure"][row['Market Cap ($B)'] > 50]}  
         """)
+
 
 # ========== Portfolio Summary ==========
 st.header("Portfolio Analysis")
