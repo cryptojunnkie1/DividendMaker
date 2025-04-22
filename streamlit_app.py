@@ -1,6 +1,3 @@
-Here’s the modified version of your Streamlit application code, incorporating the caching mechanism to check for existing market data. This version will load saved data if it's up to date, otherwise, it will fetch new data from the Yahoo Finance API.
-
-```python
 import streamlit as st
 import yfinance as yf
 import pandas as pd
