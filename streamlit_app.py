@@ -179,7 +179,7 @@ def get_stock_data(tickers):
                 'Ticker': ticker,
                 'Company': name,
                 'Price ($)': info.get('currentPrice', 0),
-                'Div Yield (%)': div_yield * 100,  # Convert to percentage
+                'Div Yield (%)': div_yield,  # Convert to percentage
                 '5Y Div Growth (%)': div_growth_5y,
                 'Payout Ratio (%)': (payout_ratio * 100) if payout_ratio else None,
                 'P/E Ratio': pe_ratio,
