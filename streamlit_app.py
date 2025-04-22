@@ -213,6 +213,28 @@ combined_df = get_stock_data(combined_stocks)
 if not combined_df.empty:
     total_investment, immediate_dividends, projected_value = dynamic_analysis(combined_df)
 
+    # Recommendations based on highest dividend yield
+    top_dividend_stocks = combined_df.nlargest(20, 'Div Yield (%)')
+    st.subheader("Top 5 Dividend Stocks to Consider")
+    for _, row in top_dividend_stocks.iterrows():
+        # Ensure values are numeric
+        row['Div Yield (%)'] = pd.to_numeric(row['Div Yield (%)'], errors='coerce')
+        row['5Y Div Growth (%)'] = pd.to_numeric(row['5Y Div Growth (%)'], errors='coerce')
+
+        # Calculate projected return
+        if pd.isna(row['Div Yield (%)']) or pd.isna(row['5Y Div Growth (%)']):
+            projected_return = float('nan')
+        else:
+            projected_return = 0.4 * row['Div Yield (%)'] + 0.6 * row['5Y Div Growth (%)']
+
+        st.markdown(f"""
+        - **{row['Ticker']} - {row['Company']}**  
+          - Current Yield: {row['Div Yield (%)']:.2f}%  
+          - Projected 5Y Total Return: {projected_return:.1f}%  
+          - P/E Ratio: {row['P/E Ratio']:.1f}  
+        """)
+
+    # Combined Dividend Analysis Section
     st.markdown(f"""
     **Combined Dividend Analysis**  
     - Total Investment: ${total_investment:,.2f}  
@@ -220,32 +242,6 @@ if not combined_df.empty:
     - Total Projected Value (5-Year With Reinvestment): ${projected_value:,.2f}  
     - Average Yield: {combined_df['Div Yield (%)'].mean():.2f}%
     """)
-
-    # Recommendations based on highest dividend yield
-top_dividend_stocks = combined_df.nlargest(20, 'Div Yield (%)')
-st.subheader("Top 5 Dividend Stocks to Consider")
-for _, row in top_dividend_stocks.iterrows():
-    # Ensure values are numeric
-    row['Div Yield (%)'] = pd.to_numeric(row['Div Yield (%)'], errors='coerce')
-    row['5Y Div Growth (%)'] = pd.to_numeric(row['5Y Div Growth (%)'], errors='coerce')
-
-    # Calculate projected return
-    if pd.isna(row['Div Yield (%)']) or pd.isna(row['5Y Div Growth (%)']):
-        projected_return = float('nan')
-    else:
-        projected_return = 0.4 * row['Div Yield (%)'] + 0.6 * row['5Y Div Growth (%)']
-
-    st.markdown(f"""
-    - **{row['Ticker']} - {row['Company']}**  
-      - Current Yield: {row['Div Yield (%)']:.2f}%  
-      - Projected 5Y Total Return: {projected_return:.1f}%  
-      - P/E Ratio: {row['P/E Ratio']:.1f}  
-    """)
-
-
-    # Additional Insights
-    st.markdown("### Insights")
-    st.write("Consider diversifying your portfolio with a mix of high-yield and growth stocks to optimize returns.")
 
 else:
     st.warning("No data available for analysis.")
@@ -369,7 +365,7 @@ if not other_df.empty:
     avg_div_yield_other = other_df['Div Yield (%)'].mean() / 100  # Convert to decimal
     annual_div_other = (other_df['Price ($)'] * other_df['Div Yield (%)'] / 100).sum()
 
-    # Total projected value with reinvestment
+        # Total projected value with reinvestment
     total_projected_value_other = total_price_other  # Start with initial investment
     for year in range(1, 6):
         annual_div_other = (total_projected_value_other * avg_div_yield_other)  # Dividends for the year
