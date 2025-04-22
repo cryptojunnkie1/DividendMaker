@@ -202,7 +202,7 @@ def generate_insight(stock):
     elif stock in growth_stocks:
         return f"{stock}: This growth stock has strong potential for capital appreciation; consider a long-term hold."
     elif stock in value_stocks:
-                return f"{stock}: This stock appears undervalued; it may be a good opportunity for value investing."
+        return f"{stock}: This stock appears undervalued; it may be a good opportunity for value investing."
     else:
         return f"{stock}: Research further to understand its potential in your portfolio."
 
@@ -510,7 +510,7 @@ if not paper_chasn_df.empty:
     with st.container(border=True):
         col1, col2, col3 = st.columns(3)
         with col1:
-                        st.metric("Portfolio Yield", f"{avg_yield:.2f}%", "vs 1.5% S&P 500")
+            st.metric("Portfolio Yield", f"{avg_yield:.2f}%", "vs 1.5% S&P 500")
         with col2:
             # Calculate and display quality score with diagnostics
             average_payout_ratio = paper_chasn_df['Payout Ratio (%)'].mean()
@@ -693,5 +693,3 @@ st.sidebar.markdown("""
 • Dynamic sector exposure breakdown  
 • Professional recommendation engine  
 """)
-
-
