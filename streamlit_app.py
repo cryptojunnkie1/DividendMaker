@@ -188,7 +188,7 @@ def get_stock_data(tickers):
             })
         except Exception as e:
             st.error(f"Error fetching data for {ticker}: {str(e)}")
-            st.write("Info Dictionary:", info)  # Debugging output
+            
     return pd.DataFrame(data)
 
 # ========== Dynamic Analysis Function ==========
