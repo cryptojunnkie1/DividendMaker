@@ -191,6 +191,21 @@ def get_stock_data(tickers):
             
     return pd.DataFrame(data)
 
+# ========== Dynamic Insights Function ==========
+def generate_insight(stock):
+    high_yield_stocks = ['O', 'NEE', 'WEC', 'ED']  # Example high-yield stocks
+    growth_stocks = ['AAPL', 'TSLA', 'AMZN']  # Example growth stocks
+    value_stocks = ['CVX', 'XOM', 'JNJ']  # Example value stocks
+
+    if stock in high_yield_stocks:
+        return f"{stock}: Consider holding this high-yield stock for steady income and potential capital appreciation."
+    elif stock in growth_stocks:
+        return f"{stock}: This growth stock has strong potential for capital appreciation; consider a long-term hold."
+    elif stock in value_stocks:
+                return f"{stock}: This stock appears undervalued; it may be a good opportunity for value investing."
+    else:
+        return f"{stock}: Research further to understand its potential in your portfolio."
+
 # ========== Dynamic Analysis Function ==========
 def dynamic_analysis(all_stocks_df):
     # Calculate total investment, annual dividends, and projected value
@@ -232,6 +247,7 @@ if not combined_df.empty:
           - Current Yield: {row['Div Yield (%)']:.2f}%  
           - Projected 5Y Total Return: {projected_return:.1f}%  
           - P/E Ratio: {row['P/E Ratio']:.1f}  
+          - Insight: {generate_insight(row['Ticker'])}
         """)
 
     # Combined Dividend Analysis Section
@@ -312,6 +328,7 @@ with col2:
             
             **Valuation:**  
             - Current P/E: {row['P/E Ratio']:.1f} vs Sector Average: {row['P/E Ratio'] * 0.9:.1f}
+            - Insight: {generate_insight(row['Ticker'])}
             """)
 
             # Fundamental Analysis 
@@ -365,7 +382,7 @@ if not other_df.empty:
     avg_div_yield_other = other_df['Div Yield (%)'].mean() / 100  # Convert to decimal
     annual_div_other = (other_df['Price ($)'] * other_df['Div Yield (%)'] / 100).sum()
 
-        # Total projected value with reinvestment
+    # Total projected value with reinvestment
     total_projected_value_other = total_price_other  # Start with initial investment
     for year in range(1, 6):
         annual_div_other = (total_projected_value_other * avg_div_yield_other)  # Dividends for the year
@@ -395,6 +412,7 @@ for _, row in other_df.iterrows():
 
         **Valuation:**  
         - Current P/E: {row['P/E Ratio']:.1f} vs Sector Average: {row['P/E Ratio'] * 0.9:.1f}
+        - Insight: {generate_insight(row['Ticker'])}
         """)
 
         # Fundamental Analysis
@@ -492,7 +510,7 @@ if not paper_chasn_df.empty:
     with st.container(border=True):
         col1, col2, col3 = st.columns(3)
         with col1:
-            st.metric("Portfolio Yield", f"{avg_yield:.2f}%", "vs 1.5% S&P 500")
+                        st.metric("Portfolio Yield", f"{avg_yield:.2f}%", "vs 1.5% S&P 500")
         with col2:
             # Calculate and display quality score with diagnostics
             average_payout_ratio = paper_chasn_df['Payout Ratio (%)'].mean()
@@ -539,7 +557,6 @@ if not paper_chasn_df.empty:
             ],
         }
 
-        
         st.subheader("Sector Allocation")
         for sector, tickers in sector_matrix.items():
             sector_percent = len([t for t in tickers if t in paper_chasn_df['Ticker'].values]) / len(paper_chasn_df) * 100
@@ -676,3 +693,5 @@ st.sidebar.markdown("""
 • Dynamic sector exposure breakdown  
 • Professional recommendation engine  
 """)
+
+
