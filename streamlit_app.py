@@ -207,17 +207,11 @@ def dynamic_analysis(all_stocks_df):
 combined_stocks = dividend_aristocrats + other_dividend_stocks + paper_chasn_stocks
 
 # Initialize combined_df
-combined_df = pd.DataFrame()  # Initialize as empty DataFrame
-
-try:
-    combined_df = get_stock_data(combined_stocks)
-except Exception as e:
-    st.error(f"Error fetching combined stock data: {str(e)}")
+combined_df = get_stock_data(combined_stocks)  # Fetch combined stock data
 
 # ========== Dynamic Analysis Section ==========
 if not combined_df.empty:
     total_investment, immediate_dividends, projected_value = dynamic_analysis(combined_df)
-
     # Recommendations based on highest dividend yield
     top_dividend_stocks = combined_df.nlargest(20, 'Div Yield (%)')
     st.subheader("Optimized Elite Dividend Analysis Picks")
@@ -261,7 +255,6 @@ col1, col2 = st.columns([3, 2])
 # Dividend Aristocrats Analysis
 with col1:
     st.header("Dividend Aristocrats Analysis")
-   
     aristocrats_df = get_stock_data(dividend_aristocrats)
     st.dataframe(
         aristocrats_df.style.format({
@@ -274,7 +267,7 @@ with col1:
         }),
         height=600
     )
-    
+
     if not aristocrats_df.empty:
         total_price_aristocrats = aristocrats_df['Price ($)'].sum()
         avg_div_yield_aristocrats = aristocrats_df['Div Yield (%)'].mean() / 100
@@ -297,6 +290,9 @@ with col1:
 with col2:
     st.header("Stock Analysis Reports")
     
+    # Define paper_chasn_df
+    paper_chasn_df = get_stock_data(paper_chasn_stocks)
+    
     for _, row in aristocrats_df.iterrows():
         with st.expander(f"{row['Ticker']} - {row['Company']}"):
             st.subheader("Investment Thesis")
@@ -309,7 +305,7 @@ with col2:
             **Dividend Projections ({shares_owned} shares):**  
             - Annual Dividend Income: **${row['Price ($)'] * shares_owned * row['Div Yield (%)'] / 100:.2f}**  
             - 5-Year Projected Income (7% growth): **${row['Price ($)'] * shares_owned * row['Div Yield (%)'] / 100 * ((1.07 ** 5 - 1) / 0.07):.2f}**
-            
+
             **Valuation:**  
             - Current P/E: {row['P/E Ratio']:.1f} vs Sector Average: {row['P/E Ratio'] * 0.9:.1f}
             - Insight: {generate_insight(row['Ticker'])}
