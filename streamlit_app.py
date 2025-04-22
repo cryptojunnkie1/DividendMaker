@@ -252,7 +252,7 @@ if not combined_df.empty:
 
     # Combined Dividend Analysis Section
     st.markdown(f"""
-    **Combined Dividend Analysis**  
+    **Optimized Elite Dividend Analysis Picks**  
     - Total Investment: ${total_investment:,.2f}  
     - Immediate Annual Dividends: ${immediate_dividends:.2f}  
     - Total Projected Value (5-Year With Reinvestment): ${projected_value:,.2f}  
