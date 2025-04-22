@@ -190,6 +190,54 @@ def get_stock_data(tickers):
             st.error(f"Error fetching data for {ticker}: {str(e)}")
     return pd.DataFrame(data)
 
+# ========== Dynamic Analysis Function ==========
+def dynamic_analysis(all_stocks_df):
+    # Calculate total investment, annual dividends, and projected value
+    total_price = all_stocks_df['Price ($)'].sum()
+    annual_dividends = (all_stocks_df['Price ($)'] * all_stocks_df['Div Yield (%)'] / 100).sum()
+    
+    # Projected value over 5 years with reinvestment
+    total_projected_value = total_price  # Start with total investment
+    for year in range(1, 6):
+        annual_dividends = (total_projected_value * (all_stocks_df['Div Yield (%)'].mean() / 100))  # Average Dividends
+        total_projected_value += annual_dividends * (1 + 0.07)  # Reinvest with projected growth
+    
+    return total_price, annual_dividends, total_projected_value
+
+# ========== Combined Stock Data ==========
+combined_stocks = dividend_aristocrats + other_dividend_stocks + paper_chasn_stocks
+combined_df = get_stock_data(combined_stocks)
+
+# ========== Dynamic Analysis Section ==========
+if not combined_df.empty:
+    total_investment, immediate_dividends, projected_value = dynamic_analysis(combined_df)
+
+    st.markdown(f"""
+    **Combined Dividend Analysis**  
+    - Total Investment: ${total_investment:,.2f}  
+    - Immediate Annual Dividends: ${immediate_dividends:.2f}  
+    - Total Projected Value (5-Year With Reinvestment): ${projected_value:,.2f}  
+    - Average Yield: {combined_df['Div Yield (%)'].mean():.2f}%
+    """)
+
+    # Recommendations based on highest dividend yield
+    top_dividend_stocks = combined_df.nlargest(5, 'Div Yield (%)')
+    st.subheader("Top 5 Dividend Stocks to Consider")
+    for _, row in top_dividend_stocks.iterrows():
+        st.markdown(f"""
+        - **{row['Ticker']} - {row['Company']}**  
+          - Current Yield: {row['Div Yield (%)']:.2f}%  
+          - Projected 5Y Total Return: {0.4 * row['Div Yield (%)'] + 0.6 * row['5Y Div Growth (%)']:.1f}%  
+          - P/E Ratio: {row['P/E Ratio']:.1f}  
+        """)
+
+    # Additional Insights
+    st.markdown("### Insights")
+    st.write("Consider diversifying your portfolio with a mix of high-yield and growth stocks to optimize returns.")
+
+else:
+    st.warning("No data available for analysis.")
+
 # ========== App Interface ==========
 st.title("Dividend Stock Analysis Toolkit")
 st.subheader("Portfolio Builder for Long-Term Investors")
