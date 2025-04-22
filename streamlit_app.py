@@ -217,7 +217,8 @@ def get_stock_data(tickers):
             # Collect relevant data with error handling
             div_yield = info.get('dividendYield')
             if div_yield is not None:
-                div_yield *= 100  # convert to percentage
+                # Removed the multiplication by 100
+                pass  # You can add any other processing you need here
 
             payout_ratio = info.get('payoutRatio', None)
             pe_ratio = info.get('trailingPE', None)
