@@ -510,12 +510,35 @@ if not paper_chasn_df.empty:
 
     with tab1:
         sector_matrix = {
-            'REITs': ['O', 'EPR', 'STWD', 'NLY', 'ARR', 'AGNC'],
-            'Energy': ['CVX', 'APA'],
-            'Financials': ['C', 'CMA', 'HSBC', 'IVZ'],
-            'Healthcare': ['ABBV', 'BMY', 'PFE'],
-            'Industrials': ['TROW', 'IEP', 'BTG']
+            'REITs': [
+                'O', 'EPR', 'STWD', 'NLY', 'ARR', 'AGNC', 'FRT', 'KIM', 'MAA', 'SPG'
+            ],
+            'Energy': [
+                'CVX', 'APA', 'XOM', 'NEE', 'D', 'DUK', 'AEE', 'VLO'
+            ],
+            'Financials': [
+                'C', 'CMA', 'HSBC', 'IVZ', 'WFC', 'ALL', 'AFL', 'BRK-B', 'USB'
+            ],
+            'Healthcare': [
+                'ABBV', 'BMY', 'PFE', 'JNJ', 'ABT', 'MDT', 'CAH'
+            ],
+            'Industrials': [
+                'TROW', 'IEP', 'BTG', 'MMM', 'CAT', 'EMR', 'ITW'
+            ],
+            'Telecommunications': [
+                'VZ', 'T'
+            ],
+            'Utilities': [
+                'WEC', 'XEL', 'ED', 'AEE', 'DTE'
+            ],
+            'Consumer Staples': [
+                'PG', 'KO', 'PEP', 'CL', 'HRL'
+            ],
+            'Consumer Discretionary': [
+                'BBY', 'TGT', 'LOW', 'HD'
+            ],
         }
+
         
         st.subheader("Sector Allocation")
         for sector, tickers in sector_matrix.items():
