@@ -2,8 +2,6 @@ import streamlit as st
 import yfinance as yf
 import pandas as pd
 from datetime import datetime
-import os
-import time
 
 # Configure the Streamlit page
 st.set_page_config(page_title="Dividend Aristocrat Analyzer", layout="wide")
@@ -208,34 +206,7 @@ reiva_j_retirement_fund = [
 ]
 
 # ========== Helper Functions ==========
-DATA_FILE = 'market_data.csv'  # Path to your data file
-
-def load_market_data():
-    """Load market data from a local file."""
-    if os.path.exists(DATA_FILE):
-        return pd.read_csv(DATA_FILE, parse_dates=['date'])
-    return None
-
-def save_market_data(data):
-    """Save market data to a local file."""
-    data.to_csv(DATA_FILE, index=False)
-
-def is_data_up_to_date(data):
-    """Check if the data is up to date."""
-    if data is not None and not data.empty:
-        last_update_date = data['date'].max().date()  # Assuming 'date' column exists
-        return last_update_date == datetime.today().date()
-    return False
-
 def get_stock_data(tickers):
-    # Load existing data
-    existing_data = load_market_data()
-
-    # Check if data is up to date
-    if is_data_up_to_date(existing_data):
-        st.info("Using cached data.")
-        return existing_data
-
     data = []
     for ticker, name in tickers:
         try:
@@ -243,7 +214,11 @@ def get_stock_data(tickers):
             info = stock.info
             history = stock.history(period="5y")
 
-            div_yield = info.get('dividendYield', None)  # Get the dividend yield directly
+            # Collect relevant data with error handling
+            div_yield = info.get('dividendYield')
+            if div_yield is not None:
+                div_yield *= 100  # convert to percentage
+
             payout_ratio = info.get('payoutRatio', None)
             pe_ratio = info.get('trailingPE', None)
             market_cap = info.get('marketCap', None)
@@ -264,19 +239,11 @@ def get_stock_data(tickers):
                 'Payout Ratio (%)': (payout_ratio * 100) if payout_ratio is not None else None,
                 'P/E Ratio': pe_ratio,
                 'Market Cap ($B)': round(market_cap / 1e9, 2) if market_cap else None,
-                'Revenue Growth (%)': info.get('revenueGrowth') * 100 if isinstance(info.get('revenueGrowth'), (int, float)) else None,
-                'date': datetime.today()  # Add today's date
+                'Revenue Growth (%)': info.get('revenueGrowth') * 100 if isinstance(info.get('revenueGrowth'), (int, float)) else None
             })
-            
-            time.sleep(1)  # Wait for 1 second between requests
         except Exception as e:
             st.error(f"Error fetching data for {ticker}: {str(e)}")
-    
-    # Convert to DataFrame and save
-    new_data_df = pd.DataFrame(data)
-    save_market_data(new_data_df)
-
-    return new_data_df
+    return pd.DataFrame(data)
 
 # ========== App Interface ==========
 st.title("Dividend Stock Analysis Toolkit")
@@ -359,7 +326,7 @@ with col2:
             # Yield Strength
             st.markdown(f"Yield Strength: {(row['Div Yield (%)'] / 1.5):.2f}x Market Average")
 
-                        # Risk/Reward Profile
+            # Risk/Reward Profile
             st.markdown(f"""
             **Risk/Reward Profile**  
             - Volatility Score: {(100 - abs(row['Payout Ratio (%)'] - 75)):.1f}/100  
@@ -496,37 +463,28 @@ if not reiva_j_df.empty:
 for _, row in reiva_j_df.iterrows():
     with st.expander(f"{row['Ticker']} - {row['Company']}"):
         st.subheader("Investment Thesis")
-        div_yield = row['Div Yield (%)'] if row['Div Yield (%)'] is not None else 0
-        five_y_div_growth = row['5Y Div Growth (%)'] if row['5Y Div Growth (%)'] is not None else 0
-        payout_ratio = row['Payout Ratio (%)'] if row['Payout Ratio (%)'] is not None else 0
-        price = row['Price ($)'] if row['Price ($)'] is not None else 0
-        pe_ratio = row['P/E Ratio'] if row['P/E Ratio'] is not None else 0
-
         st.markdown(f"""
         **Why Hold:**  
-        - {row['Company']} maintains a {div_yield:.2f}% dividend yield with
-        {five_y_div_growth:.2f}% average annual growth over 5 years.
-        - Payout ratio of {payout_ratio:.1f}% suggests sustainability.
+        - {row['Company']} maintains a {row['Div Yield (%)']:.2f}% dividend yield with
+        {row['5Y Div Growth (%)']:.2f}% average annual growth over 5 years.
+        - Payout ratio of {row['Payout Ratio (%)']:.1f}% suggests sustainability.
         
         **Dividend Projections ({shares_owned} shares):**  
-        - Annual Dividend Income: **${price * shares_owned * div_yield / 100:.2f}**  
-        - 5-Year Projected Income (7% growth): **${price * shares_owned * div_yield / 100 * ((1.07 ** 5 - 1) / 0.07):.2f}**
+        - Annual Dividend Income: **${row['Price ($)'] * shares_owned * row['Div Yield (%)'] / 100:.2f}**  
+        - 5-Year Projected Income (7% growth): **${row['Price ($)'] * shares_owned * row['Div Yield (%)'] / 100 * ((1.07 ** 5 - 1) / 0.07):.2f}**
 
         **Valuation:**  
-        - Current P/E: {pe_ratio:.1f} vs Sector Average: {pe_ratio * 0.9:.1f}
+        - Current P/E: {row['P/E Ratio']:.1f} vs Sector Average: {row['P/E Ratio'] * 0.9:.1f}
         """)
 
         # Fundamental Analysis
-        revenue_growth = row['Revenue Growth (%)'] if row['Revenue Growth (%)'] is not None else 0
-        market_cap = row['Market Cap ($B)'] if row['Market Cap ($B)'] is not None else 0
-
         st.markdown(f"""
         **Fundamental Analysis**  
-        • Current Yield: {div_yield:.2f}% (S&P 500 Avg: 1.5%)  
-        • 5Y Dividend Growth: {five_y_div_growth:.2f}%  
-        • Payout Ratio: {payout_ratio:.1f}%  
-        • Market Cap: ${market_cap:.2f}B  
-        • Revenue Trend: {revenue_growth:.2f}% YoY  
+        • Current Yield: {row['Div Yield (%)']:.2f}% (S&P 500 Avg: 1.5%)  
+        • 5Y Dividend Growth: {row['5Y Div Growth (%)'] if row['5Y Div Growth (%)'] is not None else "nan"}%  
+        • Payout Ratio: {row['Payout Ratio (%)']:.1f}%  
+        • Market Cap: ${row['Market Cap ($B)']:.2f}B  
+        • Revenue Trend: {row['Revenue Growth (%)']:.2f}% YoY  
         """)
 
         # Yield Strength
