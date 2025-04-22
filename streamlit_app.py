@@ -596,9 +596,14 @@ with tab2:
         **PaperChasn Portfolio**  
         - Total Investment: ${total_price_paper:,.2f}  
         - Immediate Annual Dividends: ${annual_div_paper:.2f}  
-        - 5-Year Projection (7% growth): ${five_year_paper:,.2f}  
+        - 5-Year Projection (7% growth): ${five_year_paper:.2f}  
         - Average Yield: {paper_chasn_df['Div Yield (%)'].mean():.2f}%
         """)
+    else:
+        st.warning("No data available for PaperChasn stocks.")
+
+# Debugging: Print columns to check for KeyError
+st.write("PaperChasn DataFrame Columns:", paper_chasn_df.columns)
 
 with tab3:
     combined_df = pd.concat([aristocrats_df, paper_chasn_df])
