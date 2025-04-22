@@ -222,7 +222,7 @@ if not combined_df.empty:
     """)
 
     # Recommendations based on highest dividend yield
-    top_dividend_stocks = combined_df.nlargest(5, 'Div Yield (%)')
+    top_dividend_stocks = combined_df.nlargest(20, 'Div Yield (%)')
     st.subheader("Top 5 Dividend Stocks to Consider")
     for _, row in top_dividend_stocks.iterrows():
         st.markdown(f"""
