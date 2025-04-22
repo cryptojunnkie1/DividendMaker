@@ -252,7 +252,7 @@ if not combined_df.empty:
 
     # Combined Dividend Analysis Section
     
-    st.subheader(**Optimized Elite Dividend Analysis Picks**)
+    st.subheader("**Optimized Elite Dividend Analysis Picks**")
         st.markdown(f"""
         - Total Investment: ${total_investment:,.2f}  
         - Immediate Annual Dividends: ${immediate_dividends:.2f}  
