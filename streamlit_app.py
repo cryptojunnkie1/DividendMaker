@@ -459,29 +459,39 @@ if not reiva_j_df.empty:
 for _, row in reiva_j_df.iterrows():
     with st.expander(f"{row['Ticker']} - {row['Company']}"):
         st.subheader("Investment Thesis")
+        div_yield = row['Div Yield (%)'] if row['Div Yield (%)'] is not None else 0
+        five_y_div_growth = row['5Y Div Growth (%)'] if row['5Y Div Growth (%)'] is not None else 0
+        payout_ratio = row['Payout Ratio (%)'] if row['Payout Ratio (%)'] is not None else 0
+        price = row['Price ($)'] if row['Price ($)'] is not None else 0
+        pe_ratio = row['P/E Ratio'] if row['P/E Ratio'] is not None else 0
+
         st.markdown(f"""
         **Why Hold:**  
-        - {row['Company']} maintains a {row['Div Yield (%)']:.2f}% dividend yield with
-        {row['5Y Div Growth (%)']:.2f}% average annual growth over 5 years.
-        - Payout ratio of {row['Payout Ratio (%)']:.1f}% suggests sustainability.
+        - {row['Company']} maintains a {div_yield:.2f}% dividend yield with
+        {five_y_div_growth:.2f}% average annual growth over 5 years.
+        - Payout ratio of {payout_ratio:.1f}% suggests sustainability.
         
         **Dividend Projections ({shares_owned} shares):**  
-        - Annual Dividend Income: **${row['Price ($)'] * shares_owned * row['Div Yield (%)'] / 100:.2f}**  
-        - 5-Year Projected Income (7% growth): **${row['Price ($)'] * shares_owned * row['Div Yield (%)'] / 100 * ((1.07 ** 5 - 1) / 0.07):.2f}**
+        - Annual Dividend Income: **${price * shares_owned * div_yield / 100:.2f}**  
+        - 5-Year Projected Income (7% growth): **${price * shares_owned * div_yield / 100 * ((1.07 ** 5 - 1) / 0.07):.2f}**
 
         **Valuation:**  
-        - Current P/E: {row['P/E Ratio']:.1f} vs Sector Average: {row['P/E Ratio'] * 0.9:.1f}
+        - Current P/E: {pe_ratio:.1f} vs Sector Average: {pe_ratio * 0.9:.1f}
         """)
 
         # Fundamental Analysis
+        revenue_growth = row['Revenue Growth (%)'] if row['Revenue Growth (%)'] is not None else 0
+        market_cap = row['Market Cap ($B)'] if row['Market Cap ($B)'] is not None else 0
+
         st.markdown(f"""
         **Fundamental Analysis**  
-        • Current Yield: {row['Div Yield (%)']:.2f}% (S&P 500 Avg: 1.5%)  
-        • 5Y Dividend Growth: {row['5Y Div Growth (%)'] if row['5Y Div Growth (%)'] is not None else "nan"}%  
-        • Payout Ratio: {row['Payout Ratio (%)']:.1f}%  
-        • Market Cap: ${row['Market Cap ($B)']:.2f}B  
-        • Revenue Trend: {row['Revenue Growth (%)']:.2f}% YoY  
+        • Current Yield: {div_yield:.2f}% (S&P 500 Avg: 1.5%)  
+        • 5Y Dividend Growth: {five_y_div_growth:.2f}%  
+        • Payout Ratio: {payout_ratio:.1f}%  
+        • Market Cap: ${market_cap:.2f}B  
+        • Revenue Trend: {revenue_growth:.2f}% YoY  
         """)
+
 
         # Yield Strength
         st.markdown(f"Yield Strength: {(row['Div Yield (%)'] / 1.5):.2f}x Market Average")
