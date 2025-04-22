@@ -259,9 +259,8 @@ if not combined_df.empty:
         - Total Projected Value (5-Year With Reinvestment): ${projected_value:,.2f}  
         - Average Yield: {combined_df['Div Yield (%)'].mean():.2f}%
         """)
-    
-    else:
-        st.warning("No data available for analysis.")
+else:
+    st.warning("No data available for analysis.")
 
 # ========== App Interface ==========
 st.title("Dividend Stock Analysis Toolkit")
