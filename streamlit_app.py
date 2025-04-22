@@ -222,15 +222,26 @@ if not combined_df.empty:
     """)
 
     # Recommendations based on highest dividend yield
-    top_dividend_stocks = combined_df.nlargest(20, 'Div Yield (%)')
-    st.subheader("Top 5 Dividend Stocks to Consider")
-    for _, row in top_dividend_stocks.iterrows():
-        st.markdown(f"""
-        - **{row['Ticker']} - {row['Company']}**  
-          - Current Yield: {row['Div Yield (%)']:.2f}%  
-          - Projected 5Y Total Return: {0.4 * row['Div Yield (%)'] + 0.6 * row['5Y Div Growth (%)']:.1f}%  
-          - P/E Ratio: {row['P/E Ratio']:.1f}  
-        """)
+top_dividend_stocks = combined_df.nlargest(20, 'Div Yield (%)')
+st.subheader("Top 5 Dividend Stocks to Consider")
+for _, row in top_dividend_stocks.iterrows():
+    # Ensure values are numeric
+    row['Div Yield (%)'] = pd.to_numeric(row['Div Yield (%)'], errors='coerce')
+    row['5Y Div Growth (%)'] = pd.to_numeric(row['5Y Div Growth (%)'], errors='coerce')
+
+    # Calculate projected return
+    if pd.isna(row['Div Yield (%)']) or pd.isna(row['5Y Div Growth (%)']):
+        projected_return = float('nan')
+    else:
+        projected_return = 0.4 * row['Div Yield (%)'] + 0.6 * row['5Y Div Growth (%)']
+
+    st.markdown(f"""
+    - **{row['Ticker']} - {row['Company']}**  
+      - Current Yield: {row['Div Yield (%)']:.2f}%  
+      - Projected 5Y Total Return: {projected_return:.1f}%  
+      - P/E Ratio: {row['P/E Ratio']:.1f}  
+    """)
+
 
     # Additional Insights
     st.markdown("### Insights")
