@@ -6,132 +6,6 @@ from datetime import datetime
 # Configure page
 st.set_page_config(page_title="Dividend Aristocrat Analyzer", layout="wide")
 
-# ========== Insight Function ==========
-def generate_insight(ticker):
-    insights = {
-        'JNJ': "Johnson & Johnson has a strong history of dividend payments and a diverse product portfolio, making it a reliable choice for income investors.",
-        'PG': "Procter & Gamble is a leader in consumer goods with consistent revenue growth and strong brand loyalty.",
-        'KO': "Coca-Cola benefits from a global brand presence and strong cash flow, supported by its extensive distribution network.",
-        'PEP': "PepsiCo's diversification in snacks and beverages ensures steady growth, even in fluctuating markets.",
-        'ABBV': "AbbVie has a strong pipeline of drugs and a commitment to returning value to shareholders through dividends.",
-        'TGT': "Target's robust e-commerce strategy and strong brand positioning help it maintain competitive advantages.",
-        'ED': "Consolidated Edison provides stable dividends backed by regulated utility operations, appealing to conservative investors.",
-        'MMM': "3M Company is known for its innovation and has a diverse product range, contributing to its long-term stability.",
-        'CL': "Colgate-Palmolive focuses on personal care and household products, ensuring consistent demand and revenue.",
-        'ADM': "Archer-Daniels-Midland is a global leader in agricultural processing, benefiting from diverse revenue streams.",
-        'AOS': "A. O. Smith has a strong presence in the water heating industry, with consistent demand for its products.",
-        'ABT': "Abbott Laboratories is known for its medical devices and diagnostics, maintaining a strong dividend growth track record.",
-        'APD': "Air Products and Chemicals is a leader in industrial gases, benefiting from long-term contracts and stable cash flows.",
-        'ALB': "Albemarle Corporation is a key player in lithium production, positioned well in the growing electric vehicle market.",
-        'AMCR': "Amcor's focus on sustainable packaging solutions aligns with global trends towards environmental responsibility.",
-        'T': "AT&T offers high dividend yields, but investors should consider its debt levels and competitive landscape.",
-        'ADP': "Automatic Data Processing provides payroll and HR services, benefiting from recurring revenue models.",
-        'BDX': "Becton Dickinson is a leader in medical technology, with strong growth prospects in the healthcare sector.",
-        'BRO': "Brown & Brown is a leading insurance brokerage firm, known for its consistent financial performance.",
-        'CHRW': "C.H. Robinson's logistics and supply chain solutions make it a vital player in global trade.",
-        'CAH': "Cardinal Health's role in healthcare distribution provides stability and growth potential.",
-        'CVX': "Chevron is a major player in the energy sector, with a focus on returning capital to shareholders through dividends.",
-        'CINF': "Cincinnati Financial has a strong track record in property and casualty insurance, appealing to risk-averse investors.",
-        'CLX': "Clorox's strong brand portfolio in cleaning and consumer products supports consistent revenue growth.",
-        'DOV': "Dover Corporation's diverse industrial products ensure stability and growth across various sectors.",
-        'EMR': "Emerson Electric is a leader in automation solutions, benefiting from increased industrial demand.",
-        'ESS': "Essex Property Trust focuses on high-quality residential properties in prime locations, ensuring steady rental income.",
-        'XOM': "ExxonMobil is a leading integrated oil and gas company, providing strong dividends despite market volatility.",
-        'FRT': "Federal Realty Investment Trust focuses on retail properties, benefiting from strong consumer demand.",
-        'BEN': "Franklin Resources is a global investment management firm, known for its consistent dividend payments.",
-        'GD': "General Dynamics is a leader in defense and aerospace, providing stability amid government contracts.",
-        'GPC': "Genuine Parts Company is a distributor of automotive and industrial parts, benefiting from steady demand.",
-        'HRL': "Hormel Foods has a diverse product line in the food sector, ensuring consistent revenue streams.",
-        'ITW': "Illinois Tool Works is known for its diversified industrial products, providing stability and growth.",
-        'KMB': "Kimberly-Clark's strong brand portfolio in consumer goods supports consistent cash flow.",
-        'LOW': "Lowe's benefits from a strong position in the home improvement sector, appealing to DIY consumers.",
-        'MKC': "McCormick & Company is a leader in spices and flavorings, benefiting from steady consumer demand.",
-        'NEE': "NextEra Energy is a leader in renewable energy, positioning itself well for future growth.",
-        'NDSN': "Nordson Corporation specializes in adhesive dispensing equipment, benefiting from diverse industrial applications.",
-        'SHW': "Sherwin-Williams is a leader in paint and coatings, with a strong brand presence and growth potential.",
-        'SWK': "Stanley Black & Decker is known for its tools and storage solutions, appealing to both consumers and professionals.",
-        'SYY': "Sysco is a leading foodservice distributor, benefiting from strong demand in the hospitality sector.",
-        'TROW': "T. Rowe Price is a global investment management firm, known for its strong performance and dividends.",
-        'TR': "Tootsie Roll Industries has a strong brand presence in the confectionery market, ensuring steady sales.",
-        'VFC': "V.F. Corporation is a leader in branded apparel, benefiting from strong consumer loyalty and brand recognition.",
-        'O': "Realty Income is known for its monthly dividends and focus on commercial real estate, appealing to income investors.",
-        'MAIN': "Main Street Capital focuses on providing debt and equity capital to lower middle-market companies, offering strong yields.",
-        'HD': "Home Depot benefits from a strong position in home improvement, appealing to both DIY and professional markets.",
-        'IBM': "International Business Machines is focused on cloud computing and AI, providing growth potential in tech.",
-        'AFL': "Aflac is a leader in supplemental insurance, known for its strong dividend history.",
-        'ARE': "Alexandria Real Estate Equities focuses on life science real estate, benefiting from consistent demand.",
-        'ALL': "Allstate provides insurance products, known for its focus on customer service and steady dividends.",
-        'MO': "Altria Group is a major player in the tobacco industry, with a focus on returning capital to shareholders.",
-        'AEE': "Ameren provides utility services with a focus on renewable energy, appealing to environmentally conscious investors.",
-        'AEP': "American Electric Power is a major utility provider, known for its stable dividends.",
-        'AWR': "American States Water provides essential water services, ensuring stable revenue streams.",
-        'AMT': "American Tower Corporation benefits from the growing demand for telecommunications infrastructure.",
-        'COLD': "Americold Realty Trust focuses on temperature-controlled warehouses, appealing to the food supply chain.",
-        'APTV': "Aptiv is a leader in automotive technology, benefiting from trends towards electric vehicles.",
-        'AVB': "AvalonBay Communities focuses on residential properties, ensuring steady rental income.",
-        'BRK-B': "Berkshire Hathaway is a diversified holding company, known for strong management and long-term value.",
-        'BBY': "Best Buy benefits from a strong retail presence in electronics, appealing to tech-savvy consumers.",
-        'BLK': "BlackRock is a global leader in investment management, known for its strong performance and dividends.",
-        'BWA': "BorgWarner specializes in automotive components, benefiting from trends towards electric vehicles.",
-        'BXP': "Boston Properties focuses on high-quality office spaces, appealing to corporate clients.",
-        'BMY': "Bristol-Myers Squibb has a strong pipeline of drugs, providing growth potential in healthcare.",
-        'AVGO': "Broadcom is a leader in semiconductor technology, benefiting from strong demand in tech.",
-        'CCJ': "Cameco is a major player in uranium production, benefiting from the growing demand for nuclear energy.",
-        'CAT': "Caterpillar is a leader in construction and mining equipment, with a strong global presence.",
-        'ATO': "Atmos Energy provides natural gas distribution, appealing to utility investors.",
-        'CSCO': "Cisco Systems is a leader in networking hardware and software, benefiting from the growth in digital infrastructure.",
-        'D': "Dominion Energy focuses on utility services with a commitment to renewable energy.",
-        'DUK': "Duke Energy is a major utility provider, known for its stable dividends and focus on sustainability.",
-        'DTE': "DTE Energy focuses on utility services in the Midwest, appealing to conservative investors.",
-        'ETN': "Eaton Corporation specializes in power management solutions, benefiting from industrial demand.",
-        'EVRG': "Evergy provides utility services in the Midwest, ensuring stable revenue streams.",
-        'ES': "Eversource Energy focuses on utility services in New England, known for reliable service.",
-        'EXC': "Exelon is a major utility provider with a focus on renewable energy, appealing to environmentally conscious investors.",
-        'FE': "FirstEnergy provides utility services in the Midwest and Northeast, known for stable dividends.",
-        'GIS': "General Mills is a leader in consumer packaged goods, ensuring consistent demand for its products.",
-        'HRL': "Hormel Foods has a diverse product line in the food sector, ensuring consistent revenue streams.",
-        'HST': "Host Hotels & Resorts focuses on high-quality hotel properties, appealing to tourism and travel markets.",
-        'ICE': "Intercontinental Exchange operates financial markets and data services, benefiting from steady demand.",
-        'IRM': "Iron Mountain specializes in information management, appealing to businesses needing secure storage.",
-        'JNJ': "Johnson & Johnson has a strong history of dividend payments and a diverse product portfolio.",
-        'KIM': "Kimco Realty focuses on retail real estate, benefiting from consumer demand.",
-        'KMI': "Kinder Morgan is a leader in energy infrastructure, known for its strong dividends.",
-        'KR': "Kroger is a major player in the grocery sector, ensuring consistent revenue.",
-        'LMT': "Lockheed Martin is a leader in defense contracting, providing stability amid government contracts.",
-        'LNT': "Alliant Energy provides utility services in the Midwest, appealing to conservative investors.",
-        'LHX': "L3Harris Technologies focuses on defense and aerospace technology, benefiting from government contracts.",
-        'MAA': "Mid-America Apartment Communities focuses on residential properties, ensuring steady rental income.",
-        'MMM': "3M Company is known for its innovation and diverse product range, contributing to its long-term stability.",
-        'NEE': "NextEra Energy is a leader in renewable energy, positioning itself well for future growth.",
-        'NI': "NiSource provides utility services in the Midwest, known for stable dividends.",
-        'NTRS': "Northern Trust is a leader in asset management, known for strong performance and dividends.",
-        'NUE': "Nucor is a major player in steel production, benefiting from industrial demand.",
-        'OKE': "ONEOK focuses on natural gas distribution, appealing to utility investors.",
-        'PPL': "PPL Corporation provides utility services in the Northeast, known for stable dividends.",
-        'PEG': "Public Service Enterprise Group focuses on utility services in New Jersey, appealing to conservative investors.",
-        'PEP': "PepsiCo's diversification in snacks and beverages ensures steady growth.",
-        'PFG': "Principal Financial Group is a leader in financial services, known for strong performance.",
-        'PG': "Procter & Gamble is a leader in consumer goods with consistent revenue growth.",
-        'PNW': "Pinnacle West Capital provides utility services in Arizona, known for stable dividends.",
-        'RTX': "Raytheon Technologies focuses on defense and aerospace, benefiting from government contracts.",
-        'SBUX': "Starbucks has a strong brand presence in the coffee sector, ensuring consistent revenue.",
-        'SO': "Southern Company provides utility services in the Southeast, appealing to conservative investors.",
-        'SPG': "Simon Property Group focuses on retail real estate, benefiting from consumer demand.",
-        'T': "AT&T offers high dividend yields, but investors should consider its debt levels and competitive landscape.",
-        'TGT': "Target's robust e-commerce strategy and strong brand positioning help it maintain competitive advantages.",
-        'TRV': "The Travelers Companies provides insurance products, known for its focus on customer service.",
-        'UDR': "UDR focuses on residential properties, ensuring steady rental income.",
-        'USB': "U.S. Bancorp is a major player in banking, known for strong performance and dividends.",
-        'VLO': "Valero Energy is a major player in refining, benefiting from strong demand for fuels.",
-        'VTR': "Ventas focuses on healthcare real estate, appealing to income investors.",
-        'VZ': "Verizon Communications is a leader in telecommunications, known for steady dividends.",
-        'WEC': "WEC Energy Group provides utility services in the Midwest, appealing to conservative investors.",
-        'WFC': "Wells Fargo is a major player in banking, known for strong performance and dividends.",
-        'WMB': "Williams Companies focuses on natural gas infrastructure, appealing to utility investors.",
-        'XEL': "Xcel Energy focuses on renewable energy, appealing to environmentally conscious investors."
-    }
-    return insights.get(ticker, "No specific insight available.")
-
 # ========== Data Setup ==========
 dividend_aristocrats = [
     ('JNJ', 'Johnson & Johnson'),
@@ -246,7 +120,7 @@ other_dividend_stocks = [
     ('PNW', 'Pinnacle West Capital'),
     ('RTX', 'Raytheon Technologies'),
     ('SBUX', 'Starbucks'),
-        ('SO', 'Southern Company'),
+    ('SO', 'Southern Company'),
     ('SPG', 'Simon Property Group'),
     ('T', 'AT&T'),
     ('TGT', 'Target'),
@@ -333,11 +207,17 @@ def dynamic_analysis(all_stocks_df):
 combined_stocks = dividend_aristocrats + other_dividend_stocks + paper_chasn_stocks
 
 # Initialize combined_df
-combined_df = get_stock_data(combined_stocks)  # Fetch combined stock data
+combined_df = pd.DataFrame()  # Initialize as empty DataFrame
+
+try:
+    combined_df = get_stock_data(combined_stocks)
+except Exception as e:
+    st.error(f"Error fetching combined stock data: {str(e)}")
 
 # ========== Dynamic Analysis Section ==========
 if not combined_df.empty:
     total_investment, immediate_dividends, projected_value = dynamic_analysis(combined_df)
+
     # Recommendations based on highest dividend yield
     top_dividend_stocks = combined_df.nlargest(20, 'Div Yield (%)')
     st.subheader("Optimized Elite Dividend Analysis Picks")
@@ -381,6 +261,7 @@ col1, col2 = st.columns([3, 2])
 # Dividend Aristocrats Analysis
 with col1:
     st.header("Dividend Aristocrats Analysis")
+   
     aristocrats_df = get_stock_data(dividend_aristocrats)
     st.dataframe(
         aristocrats_df.style.format({
@@ -393,7 +274,7 @@ with col1:
         }),
         height=600
     )
-
+    
     if not aristocrats_df.empty:
         total_price_aristocrats = aristocrats_df['Price ($)'].sum()
         avg_div_yield_aristocrats = aristocrats_df['Div Yield (%)'].mean() / 100
@@ -416,9 +297,6 @@ with col1:
 with col2:
     st.header("Stock Analysis Reports")
     
-    # Define paper_chasn_df
-    paper_chasn_df = get_stock_data(paper_chasn_stocks)
-    
     for _, row in aristocrats_df.iterrows():
         with st.expander(f"{row['Ticker']} - {row['Company']}"):
             st.subheader("Investment Thesis")
@@ -431,7 +309,7 @@ with col2:
             **Dividend Projections ({shares_owned} shares):**  
             - Annual Dividend Income: **${row['Price ($)'] * shares_owned * row['Div Yield (%)'] / 100:.2f}**  
             - 5-Year Projected Income (7% growth): **${row['Price ($)'] * shares_owned * row['Div Yield (%)'] / 100 * ((1.07 ** 5 - 1) / 0.07):.2f}**
-
+            
             **Valuation:**  
             - Current P/E: {row['P/E Ratio']:.1f} vs Sector Average: {row['P/E Ratio'] * 0.9:.1f}
             - Insight: {generate_insight(row['Ticker'])}
@@ -578,34 +456,40 @@ with tab2:
 with tab3:
     combined_df = pd.concat([aristocrats_df, paper_chasn_df])
     if not combined_df.empty:
-                total_comb = combined_df['Price ($)'].sum()
-        annual_div_comb = (combined_df['Price ($)'] * combined_df['Div Yield (%)'] / 100).sum()
-        five_year_comb = annual_div_comb * ((1.07 ** 5 - 1) / 0.07)
-        
+        total_combined = combined_df['Price ($)'].sum()
+        annual_combined = (combined_df['Price ($)'] * combined_df['Div Yield (%)'] / 100).sum()
+        five_year_combined = annual_combined * ((1.07 ** 5 - 1) / 0.07)
         st.markdown(f"""
-        **Combined Portfolio**  
-        - Total Investment: ${total_comb:,.2f}  
-        - Immediate Annual Dividends: ${annual_div_comb:.2f}  
-        - 5-Year Projection (7% growth): ${five_year_comb:.2f}  
-        - Average Yield: {combined_df['Div Yield (%)'].mean():.2f}%
+        **Combined Strategy Portfolio**  
+        - Total Investment: ${total_combined:,.2f}  
+        - Immediate Annual Dividends: ${annual_combined:,.2f}  
+        - 5-Year Projection (7% growth): ${five_year_combined:,.2f}  
+        - Yield Composition:  
+          • Aristocrats: {aristocrats_df['Div Yield (%)'].mean():.2f}%  
+          • PaperChasn: {paper_chasn_df['Div Yield (%)'].mean():.2f}%
         """)
-    else:
-        st.warning("No data available for the combined portfolio.")
 
-# ========== Conclusion ==========
-st.header("Conclusion")
-st.markdown("""
-Investing in dividend stocks can provide a steady income stream and potential for capital appreciation. By analyzing dividend aristocrats and other reliable dividend payers, investors can build a robust portfolio that offers both stability and growth.
-
-Consider your investment horizon and risk tolerance when selecting stocks, and always diversify your holdings to mitigate risks.
-""")
-
-# ========== Final Notes ==========
-st.sidebar.header("Additional Resources")
+# ========== Usage Instructions ==========
 st.sidebar.markdown("""
-- [Investopedia - Dividend Investing](https://www.investopedia.com/terms/d/dividend.asp)
-- [Yahoo Finance](https://finance.yahoo.com/)
-- [Seeking Alpha](https://seekingalpha.com/)
+**How to Use:**  
+
+1. Enter planned share count in main input  
+2. Explore Aristocrats in left table  
+3. Click ➕ icons for detailed analysis  
+4. Compare all stock categories sequentially  
+5. Analyze different portfolio strategies via tabs  
+
+**Key Metrics:**  
+- **Div Yield%**: Annual dividend/price  
+- **Payout Ratio**: % of earnings paid as dividends  
+- **5Y Growth**: Dividend growth trajectory  
+- **Rev Growth**: Fundamental strength indicator  
+
+**New Features:**
+• Full PaperChasn high-yield analysis  
+• Three portfolio comparison strategies  
+• Complete 5-year projections for all portfolios  
+• Institutional-grade risk analysis  
+• Dynamic sector exposure breakdown  
+• Professional recommendation engine  
 """)
-
-
